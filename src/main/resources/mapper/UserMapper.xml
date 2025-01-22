@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.UserMapper">
+    <resultMap id = "userMap" type = "com.easyads.management.user.model.user.User">
+        <result property = "id" column = "id" />
+        <result property = "userName" column = "user_name" />
+        <result property = "nickName" column = "nick_name" />
+        <result property = "roleType" column = "role_type" />
+        <result property = "roleTypeName" column = "role_type_name" />
+        <result property = "passwordHash" column = "password_hash" />
+        <result property = "status" column = "status" />
+    </resultMap>
+
+    <select id = "getUserByName" resultMap = "userMap">
+        SELECT
+            A.id AS id,
+            A.user_name,
+            A.nick_name,
+            A.role_type,
+            B.name AS role_type_name,
+            A.password_hash,
+            A.status
+        FROM user A
+        LEFT OUTER JOIN
+        (
+            SELECT value, name
+            FROM system_code
+            WHERE code_type_id = 3 AND status = 1
+        ) B ON A.role_type = B.value
+        WHERE
+            A.user_name = #{name}
+            AND A.status = 1 AND A.mark_delete = 0
+    </select>
+
+    <select id = "getUserCount" resultType = "java.lang.Integer"
+            parameterType = "com.easyads.management.user.model.filter.UserFilterParams">
+        SELECT count(A.id)
+        FROM user A
+        WHERE
+            A.mark_delete = 0
+            <if test="status != null">
+                AND A.status = #{status}
+            </if>
+            <if test="userRoleType != null">
+                AND A.role_type >= #{userRoleType}
+            </if>
+            <if test="roleType != null">
+                AND A.role_type = #{roleType}
+            </if>
+            <if test="searchText != null">
+                AND (A.user_name rlike #{searchText} OR A.nick_name rlike #{searchText})
+            </if>
+    </select>
+
+    <select id = "getUserList" resultMap = "userMap"
+            parameterType = "com.easyads.management.user.model.filter.UserFilterParams">
+        SELECT
+            A.id,
+            A.user_name,
+            A.nick_name,
+            A.role_type,
+            B.name AS role_type_name,
+            A.status
+        FROM user A
+        LEFT OUTER JOIN
+        (
+            SELECT value, name
+            FROM system_code
+            WHERE code_type_id = 3 AND status = 1
+        ) B ON A.role_type = B.value
+        WHERE
+            A.mark_delete = 0
+            <if test="status != null">
+                AND A.status = #{status}
+            </if>
+            <if test="userRoleType != null">
+                AND A.role_type >= #{userRoleType}
+            </if>
+            <if test="roleType != null">
+                AND A.role_type = #{roleType}
+            </if>
+            <if test="searchText != null">
+                AND (A.user_name rlike #{searchText} OR A.nick_name rlike #{searchText})
+            </if>
+        ORDER BY A.id desc
+        <if test="limit != null">
+            limit #{limit}
+            <if test="offset!=null">
+                offset #{offset}
+            </if>
+        </if>
+    </select>
+
+    <select id = "getOneUser" resultMap = "userMap">
+        SELECT
+            A.id,
+            A.user_name,
+            A.nick_name,
+            A.role_type,
+            B.name AS role_type_name,
+            A.status
+        FROM user A
+        LEFT OUTER JOIN
+        (
+            SELECT value, name
+            FROM system_code
+            WHERE code_type_id = 3 AND status = 1
+        ) B ON A.role_type = B.value
+        WHERE
+            A.id = #{userId} AND A.mark_delete = 0
+    </select>
+
+    <insert id = "createOneUser" useGeneratedKeys = "true" keyProperty = "id" keyColumn = "id">
+        INSERT INTO user
+        (user_name, nick_name, role_type, password_hash)
+        VALUES (#{userName}, #{nickName}, #{roleType}, #{passwordHash});
+    </insert>
+
+    <update id = "updateOneUser">
+        UPDATE user
+        SET user_name = #{user.userName}, nick_name = #{user.nickName}, role_type = #{user.roleType}
+        WHERE id = #{userId}
+    </update>
+
+    <update id = "updateOneUserStatus">
+        UPDATE user
+        SET status = #{status} WHERE id = #{userId}
+    </update>
+
+    <update id = "updateOneUserPassword">
+        UPDATE user
+        SET password_hash = #{passwordHash}
+        WHERE id = #{userId}
+    </update>
+
+    <update id = "deleteOneUser">
+        UPDATE user SET mark_delete = 1, status = 0
+        WHERE id = #{userId}
+    </update>
+</mapper>

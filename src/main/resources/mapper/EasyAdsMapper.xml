@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.EasyAdsMapper">
+
+    <resultMap id = "sdkAdspotPropertyMap" type = "com.easyads.export.model.format.SdkAdspotProperty">
+        <result property = "adspotid" column = "adspotid" />
+        <result property = "appid" column = "appid" />
+        <association property = "requestLimit" javaType = "com.easyads.export.model.format.AdspotRequestLimit">
+            <result property = "device_daily_req_limit" column = "device_daily_req_limit" />
+            <result property = "device_daily_imp_limit" column = "device_daily_imp_limit" />
+            <result property = "device_request_interval" column = "device_req_interval" />
+        </association>
+    </resultMap>
+
+    <select id = "getSdkAdspotProperty" resultMap = "sdkAdspotPropertyMap">
+        SELECT
+            A.id AS adspotid,
+            B.id AS appid,
+            A.device_daily_req_limit,
+            A.device_daily_imp_limit,
+            A.device_req_interval
+        FROM adspot A
+        JOIN media B ON A.media_id = B.id
+        WHERE
+            A.status = 1 AND A.mark_delete = 0
+            AND B.status = 1 AND B.mark_delete = 0
+    </select>
+
+    <select id = "getSdkSupplierConf" resultType = "com.easyads.export.model.origin.SdkOriginInfo" >
+        SELECT
+            A.id,
+            A.adn_id,
+            B.adn_name AS name,
+            COALESCE(A.supplier_params, "") AS supplier_params,
+            COALESCE(A.bid_price, "0") AS bid_price,
+            COALESCE(A.bid_ratio, 1.0) AS bid_ratio,
+            COALESCE(A.is_head_bidding, 0) AS is_head_bidding,
+            A.time_out,
+            COALESCE(A.device_daily_req_limit, 0) AS device_daily_req_limit,
+            COALESCE(A.device_daily_imp_limit, 0) AS device_daily_imp_limit,
+            COALESCE(A.device_request_interval, 0) AS device_request_interval,
+            COALESCE(A.location_list, "") AS location_list,
+            COALESCE(A.make_list, "") AS make_list,
+            COALESCE(A.osv_list, "") AS osv_list,
+            COALESCE(app_versions, "") AS app_versions
+        FROM adspot_sdk_channel A
+        JOIN sdk_adn B ON A.adn_id = B.id
+        WHERE
+            A.status = 1 AND A.mark_delete = 0
+    </select>
+
+    <select id = "getSdkGroupStrategyOrigin" resultType = "com.easyads.export.model.origin.SdkGroupStrategyOrigin">
+        SELECT
+            A.adspot_id,
+            B.id AS group_id,
+            B.tag AS group_name,
+            B.percentage AS percentage,
+            C.id AS strategy_id,
+            C.name AS strategy_name,
+            C.priority,
+            C.sdk_version,
+            C.app_version,
+            A.supplier_ids
+        FROM sdk_group A
+        JOIN sdk_group_percentage B ON A.sdk_group_percentage_id = B.id
+        JOIN sdk_group_targeting C ON A.sdk_group_targeting_id = C.id
+    </select>
+</mapper>

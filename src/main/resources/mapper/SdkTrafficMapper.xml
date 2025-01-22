@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.SdkTrafficMapper">
+
+    <resultMap id = "sdkTrafficMap" type = "com.easyads.management.distribution.traffic.model.SdkTraffic">
+        <id property = "id" column = "sdk_group_percentage_id" />
+
+        <association property = "trafficPercentage" javaType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy">
+            <id property = "percentageId" column = "sdk_group_percentage_id"/>
+            <result property = "tag" column = "tag" />
+            <result property = "percentage" column = "percentage" />
+        </association>
+
+        <collection property = "trafficGroupList" ofType = "com.easyads.management.distribution.traffic.model.SdkTrafficGroup">
+            <id property = "trafficId" column = "sdk_traffic_id"/>
+            <result property = "supplier_ids" column = "supplier_ids" />
+
+            <association property = "groupStrategy" javaType = "com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy">
+                <result property = "groupTargetId" column = "sdk_group_targeting_id" />
+                <result property = "name" column = "name" />
+                <result property = "priority" column = "priority" />
+
+                <association property = "sdkGroupDirectionOrigin" javaType = "com.easyads.management.distribution.strategy.model.group.SdkGroupDirectionOrigin">
+                    <result property = "appVersion" column = "app_version" />
+                    <result property = "sdkVersion" column = "sdk_version" />
+                </association>
+            </association>
+        </collection>
+    </resultMap>
+
+    <!-- 主页面流量分发全局详细信息 -->
+    <select id = "getOneAdspotSdkTrafficDetail" resultMap = "sdkTrafficMap">
+        SELECT
+            A.id AS sdk_traffic_id,
+            B.id AS sdk_group_percentage_id,
+            B.tag,
+            B.percentage,
+            C.id AS sdk_group_targeting_id,
+            C.name,
+            C.priority,
+            C.app_version,
+            C.sdk_version,
+            A.supplier_ids
+        FROM sdk_group A
+        JOIN sdk_group_percentage B ON A.sdk_group_percentage_id = B.id
+        JOIN sdk_group_targeting C ON A.sdk_group_targeting_id = C.id
+        WHERE A.adspot_id = #{adspotId}
+            <if test = "percentageId != null">
+                AND A.sdk_group_percentage_id = #{percentageId}
+            </if>
+        ORDER BY B.id, C.priority ASC
+    </select>
+
+    <!-- 流量分发设置 -->
+    <select id = "getOneAdspotOneSdkTrafficSimple" resultType = "com.easyads.management.distribution.traffic.model.SdkTrafficGroupSimple">
+        SELECT id, supplier_ids
+        FROM sdk_group
+        WHERE adspot_id = #{adspotId} AND id = #{sdkTrafficId}
+    </select>
+
+    <update id = "updateTrafficGroup">
+        UPDATE sdk_group
+        SET supplier_ids = #{supplierIds}
+        WHERE id = #{sdkTrafficId}
+    </update>
+
+    <update id = "updateOneAdspotAllTraffic">
+        <foreach collection = "sdkTrafficList" item = "item" separator = ";">
+            UPDATE sdk_group SET supplier_ids = #{item.supplier_ids}
+            WHERE id = #{item.id}
+        </foreach>
+    </update>
+
+    <select id = "getOneAdspotSdkTrafficSimple" resultType = "com.easyads.management.distribution.traffic.model.SdkTrafficGroupSimple">
+        SELECT id, supplier_ids
+        FROM sdk_group
+        WHERE adspot_id = #{adspotId} AND supplier_ids rlike #{sdkChannelId}
+    </select>
+
+
+    <!-- 流量切分更新导致分发设置更新 -->
+    <insert id = "createPercentageTraffic">
+        INSERT INTO sdk_group
+        (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id)
+        VALUES
+        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
+            (#{adspotId}, #{item.percentageId}, #{sdkGroupStrategyList[${index}].groupTargetId})
+        </foreach>
+    </insert>
+
+    <delete id = "deletePercentageTraffic">
+        DELETE FROM sdk_group
+        WHERE
+            sdk_group_percentage_id IN
+            <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                #{item}
+            </foreach>
+    </delete>
+
+    <!-- 分组策略更新导致分发设置更新 -->
+    <insert id = "createOnePercentageGroupStrategyTraffic" useGeneratedKeys = "true" keyProperty = "id"
+            parameterType = "com.easyads.management.distribution.traffic.model.SdkTrafficSingle">
+        INSERT INTO sdk_group
+        (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id)
+        VALUES (#{adspotId}, #{percentageId}, #{groupTargetId})
+    </insert>
+
+    <insert id = "createGroupStrategyTraffic">
+        INSERT INTO sdk_group
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id)
+        VALUES
+            <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
+                (#{adspotId}, #{percentageId}, #{item.groupTargetId})
+            </foreach>
+    </insert>
+
+    <insert id = "createGroupStrategyTrafficWithSupplier">
+        INSERT INTO sdk_group
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, supplier_ids)
+        VALUES
+            <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
+                (#{adspotId}, #{percentageId}, #{item.groupTargetId}, #{supplierTraffic[${index}]})
+            </foreach>
+    </insert>
+
+    <delete id = "deleteGroupStrategyTraffic">
+        DELETE FROM sdk_group
+        WHERE
+            sdk_group_targeting_id IN
+            <foreach collection = "groupTargetIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                #{item}
+            </foreach>
+    </delete>
+</mapper>

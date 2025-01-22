@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.MediaReportMapper">
+    <sql id = "commonSelectDimensions">
+        timestamp AS dimension,
+        adspot_id,
+        <choose>
+            <when test = "hasChannelDimension">
+                channel_id,
+                sum(reqs) AS req,
+                sum(bids) AS bid,
+                sum(wins) AS win,
+            </when>
+            <otherwise>
+                sum(DISTINCT pvs) AS req,
+                sum(wins) AS bid,
+                sum(wins) AS win,
+            </otherwise>
+        </choose>
+        sum(shows) AS imp,
+        sum(clicks) AS click,
+        sum(income) AS income,
+    </sql>
+
+    <sql id = "commonConditions">
+        <if test="mediaIds != null and mediaIds.size() != 0">
+            AND media_id IN
+            <foreach collection="mediaIds" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="adspotIds != null and adspotIds.size() != 0">
+            AND adspot_id IN
+            <foreach collection="adspotIds" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="sdkAdspotIds != null and sdkAdspotIds.size() != 0">
+            AND sdk_adspot_id IN
+            <foreach collection="sdkAdspotIds" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="channelIds != null and channelIds.size() != 0">
+            AND channel_id IN
+            <foreach collection="channelIds" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="adspotIdsByType != null and adspotIdsByType.size() != 0">
+            AND adspot_id IN
+            <foreach collection="adspotIdsByType" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </sql>
+
+
+    <select id = "getMediaReport" parameterType = "com.easyads.management.report.model.bean.data.filter.MediaReportFilterParams"
+            resultType = "com.easyads.management.report.model.bean.data.entity.MediaReport">
+        SELECT
+            <if test="selectDimensions != null and selectDimensions.size() != 0">
+                <foreach collection="selectDimensions" item="item" separator=" ">
+                    ${item},
+                </foreach>
+            </if>
+            <choose>
+                <when test="hasChannelDimension">
+                    sum(reqs) AS req,
+                    sum(bids) AS bid,
+                    sum(wins) AS win,
+                </when>
+                <otherwise>
+                    sum(DISTINCT pvs) AS req,
+                    sum(wins) AS bid,
+                    sum(wins) AS win,
+                </otherwise>
+            </choose>
+            sum(shows) AS imp,
+            sum(clicks) AS click,
+            ROUND(sum(income), 2) AS income,
+            sum(report_api_req) AS thirdReq,
+            sum(report_api_bid) AS thirdBid,
+            sum(report_api_imp) AS thirdImp,
+            sum(report_api_click) AS thirdClick,
+            round(sum(report_api_income), 2) AS thirdIncome
+        FROM (
+            SELECT
+                timestamp,
+                channel_id,
+                pvs,
+                reqs,
+                bids,
+                wins,
+                shows,
+                clicks,
+                income,
+                <choose>
+                    <when test = "table == 'report_daily'">
+                        report_api_req,
+                        report_api_bid,
+                        report_api_imp,
+                        report_api_click,
+                        report_api_income
+                    </when>
+                    <otherwise>
+                        0 AS report_api_req,
+                        0 AS report_api_bid,
+                        0 AS report_api_imp,
+                        0 AS report_api_click,
+                        0 AS report_api_income
+                    </otherwise>
+                </choose>
+            FROM
+                ${table}
+            WHERE
+                timestamp BETWEEN #{beginTime} AND #{dailyEndTime}
+                <include refid="commonConditions" /> <!-- 引用公共条件 -->
+            <if test="hasTodayDailyData">
+                UNION ALL
+                SELECT
+                    timestamp,
+                    channel_id,
+                    pvs,
+                    reqs,
+                    bids,
+                    wins,
+                    shows,
+                    clicks,
+                    income,
+                    0 AS report_api_req,
+                    0 AS report_api_bid,
+                    0 AS report_api_imp,
+                    0 AS report_api_click,
+                    0 AS report_api_income
+                FROM
+                    report_hourly
+                WHERE
+                    timestamp BETWEEN #{hourlyBeginTime} AND #{endTime}
+                    <include refid="commonConditions" /> <!-- 引用公共条件 -->
+            </if>
+        ) UNION_TABLE
+        GROUP BY dimension
+        ORDER BY dimension ASC
+    </select>
+
+    <!-- 获取媒体报表详细数据的汇总数据 -->
+    <select id = "getMediaReportSummary" parameterType = "com.easyads.management.report.model.bean.data.filter.MediaReportFilterParams"
+            resultType = "com.easyads.management.report.model.bean.data.entity.MediaReportDetail">
+        SELECT
+            0 AS dimension,
+            '' AS dateRange,
+            sum(TOTAL.req) AS req,
+            sum(TOTAL.bid) AS bid,
+            sum(TOTAL.win) AS bidWin,
+            sum(TOTAL.imp) AS imp,
+            sum(TOTAL.click) AS click,
+            ROUND(sum(TOTAL.income), 2) AS income,
+            sum(TOTAL.thirdReq) AS thirdReq,
+            sum(TOTAL.thirdBid) AS thirdBid,
+            sum(TOTAL.thirdImp) AS thirdImp,
+            sum(TOTAL.thirdClick) AS thirdClick,
+            ROUND(sum(TOTAL.thirdIncome), 2) AS thirdIncome
+        FROM
+        (
+            SELECT
+                <include refid="commonSelectDimensions" />
+                <choose>
+                    <when test = "table == 'report_daily'">
+                        sum(report_api_req) AS thirdReq,
+                        sum(report_api_bid) AS thirdBid,
+                        sum(report_api_imp) AS thirdImp,
+                        sum(report_api_click) AS thirdClick,
+                        sum(report_api_income) AS thirdIncome
+                    </when>
+                    <otherwise>
+                        0 AS thirdReq,
+                        0 AS thirdBid,
+                        0 AS thirdImp,
+                        0 AS thirdClick,
+                        0 AS thirdIncome
+                    </otherwise>
+                </choose>
+            FROM
+                ${table}
+            WHERE
+                timestamp BETWEEN #{beginTime} AND #{dailyEndTime}
+                <include refid="commonConditions" /> <!-- 引用公共条件 -->
+            <choose>
+                <when test="hasChannelDimension">
+                    GROUP BY 1,2,3
+                </when>
+                <otherwise>
+                    GROUP BY 1,2
+                </otherwise>
+            </choose>
+            <if test="hasTodayDailyData">
+                UNION ALL
+                SELECT
+                    <include refid="commonSelectDimensions" />
+                    0 AS thirdReq,
+                    0 AS thirdBid,
+                    0 AS thirdImp,
+                    0 AS thirdClick,
+                    0 AS thirdIncome
+                FROM
+                    report_hourly
+                WHERE
+                    timestamp BETWEEN #{hourlyBeginTime} AND #{endTime}
+                    <include refid="commonConditions" /> <!-- 引用公共条件 -->
+                <choose>
+                    <when test = "hasChannelDimension">
+                        GROUP BY 1,2,3
+                    </when>
+                    <otherwise>
+                        GROUP BY 1,2
+                    </otherwise>
+                </choose>
+            </if>
+        ) TOTAL
+        GROUP BY 1,2
+    </select>
+
+    <select id = "getMediaReportCount" parameterType = "com.easyads.management.report.model.bean.data.filter.MediaReportFilterParams"
+            resultType = "java.lang.Long">
+        SELECT
+            count(*)
+        FROM (
+            SELECT
+                <if test = "selectDimensions != null and selectDimensions.size() != 0">
+                    <foreach collection="selectDimensions" item="item" separator=",">
+                        ${item}
+                    </foreach>
+                </if>
+            FROM
+            (
+                SELECT
+                    timestamp,
+                    media_id,
+                    adspot_id,
+                    channel_id,
+                    sdk_adspot_id
+                FROM
+                    ${table}
+                WHERE
+                    timestamp BETWEEN #{beginTime} AND #{dailyEndTime}
+                    <include refid="commonConditions" /> <!-- 引用公共条件 -->
+
+                <!-- 如果查询带今天就补一下今天的小时数据 -->
+                <if test = "hasTodayDailyData">
+                    UNION ALL
+                    SELECT
+                        timestamp,
+                        media_id,
+                        adspot_id,
+                        channel_id,
+                        sdk_adspot_id
+                    FROM
+                        report_hourly
+                    WHERE
+                        timestamp BETWEEN #{hourlyBeginTime} AND #{endTime}
+                        <include refid="commonConditions" /> <!-- 引用公共条件 -->
+                </if>
+            ) UNION_TABLE
+        <!-- GROUP BY -->
+        <if test="groupbyDimensions != null and groupbyDimensions.size() != 0">
+                GROUP BY
+                <foreach collection="groupbyDimensions" item="item" separator=",">
+                    ${item}
+                </foreach>
+            </if>
+        ) TOTAL
+    </select>
+
+    <select id = "getMediaReportDetail" parameterType = "com.easyads.management.report.model.bean.data.filter.MediaReportFilterParams"
+            resultType = "com.easyads.management.report.model.bean.data.entity.MediaReportDetail">
+        SELECT
+            TOTAL.*,
+            TOTAL.dimension AS timestamp
+            <choose>
+                <when test = "sort == 'bidRate'">
+                    , IF(TOTAL.req = 0, 0, 1.0 * TOTAL.bid / TOTAL.req) AS bidRate
+                </when>
+                <when test = "sort == 'impRate'">
+                    , IF(TOTAL.bid = 0, 0, 1.0 * TOTAL.imp / TOTAL.bid) AS impRate
+                </when>
+                <when test = "sort == 'clickRate'">
+                    , IF(TOTAL.imp = 0, 0, 1.0 * TOTAL.click / TOTAL.imp) AS clickRate
+                </when>
+                <when test = "sort == 'ecpm'">
+                    , IF(TOTAL.imp = 0, 0, 1000.0 * TOTAL.income / TOTAL.imp) AS ecpm
+                </when>
+                <when test = "sort == 'ecpc'">
+                    , IF(TOTAL.click = 0, 0, TOTAL.income / TOTAL.click) AS ecpc
+                </when>
+            </choose>
+        FROM
+        (
+            SELECT
+                <if test="selectDimensions != null and selectDimensions.size() != 0">
+                    <foreach collection="selectDimensions" item="item" separator=" ">
+                        ${item},
+                    </foreach>
+                </if>
+                min(id) AS id,
+                <choose>
+                    <when test="hasChannelDimension">
+                        sum(reqs) AS req,
+                        sum(bids) AS bid,
+                        sum(wins) AS bidWin,
+                    </when>
+                    <otherwise>
+                        sum(DISTINCT pvs) AS req,
+                        sum(wins) AS bid,
+                        sum(wins) AS bidWin,
+                    </otherwise>
+                </choose>
+                sum(shows) AS imp,
+                sum(clicks) AS click,
+                ROUND(sum(income), 2) AS income,
+                sum(report_api_req) AS thirdReq,
+                sum(report_api_bid) AS thirdBid,
+                sum(report_api_imp) AS thirdImp,
+                sum(report_api_click) AS thirdClick,
+                round(sum(report_api_income), 2) AS thirdIncome
+            FROM (
+                SELECT
+                    id,
+                    timestamp,
+                    media_id,
+                    adspot_id,
+                    channel_id,
+                    sdk_adspot_id,
+                    pvs,
+                    reqs,
+                    bids,
+                    wins,
+                    shows,
+                    clicks,
+                    income,
+                    <choose>
+                        <when test = "table == 'report_daily'">
+                            report_api_req,
+                            report_api_bid,
+                            report_api_imp,
+                            report_api_click,
+                            report_api_income
+                        </when>
+                        <otherwise>
+                            0 AS report_api_req,
+                            0 AS report_api_bid,
+                            0 AS report_api_imp,
+                            0 AS report_api_click,
+                            0 AS report_api_income
+                        </otherwise>
+                    </choose>
+                FROM
+                    ${table}
+                WHERE
+                    timestamp BETWEEN #{beginTime} AND #{dailyEndTime}
+                    <include refid="commonConditions" /> <!-- 引用公共条件 -->
+
+            <if test="hasTodayDailyData">
+                UNION ALL
+
+                    SELECT
+                        id,
+                        timestamp,
+                        media_id,
+                        adspot_id,
+                        channel_id,
+                        sdk_adspot_id,
+                        pvs,
+                        reqs,
+                        bids,
+                        wins,
+                        shows,
+                        clicks,
+                        income,
+                        0 AS report_api_req,
+                        0 AS report_api_bid,
+                        0 AS report_api_imp,
+                        0 AS report_api_click,
+                        0 AS report_api_income
+                    FROM
+                        report_hourly
+                    WHERE
+                        timestamp BETWEEN #{hourlyBeginTime} AND #{endTime}
+                    <include refid="commonConditions" /> <!-- 引用公共条件 -->
+                </if>
+            ) UNION_TABLE
+        <!-- GROUP BY -->
+        <if test="groupbyDimensions != null and groupbyDimensions.size() != 0">
+                GROUP BY
+                <foreach collection="groupbyDimensions" item="item" separator=",">
+                    ${item}
+                </foreach>
+            </if>
+        ) TOTAL
+        <!-- SORT -->
+        <if test="sort != null">
+            ORDER BY ${sort}
+            <if test="dir != null">
+                ${dir}
+            </if>
+        </if>
+        <!-- LIMIT -->
+        <if test="limit != null">
+            limit #{limit}
+            <if test="offset!=null">
+                offset #{offset}
+            </if>
+        </if>
+    </select>
+
+    <!-- 根据时间段获取有数据的渠道 -->
+    <select id = "getHasDataIds" parameterType = "com.easyads.management.report.model.filter.TrafficDataFilterParams"
+            resultType="java.lang.String">
+        SELECT
+            id
+        FROM (
+            <if test="dailyBeginTime != null">
+                SELECT
+                    ${mysqlField} AS id
+                FROM
+                    report_daily
+                WHERE
+                    timestamp BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
+                    <if test="mediaIds != null and mediaIds.size() != 0">
+                        AND media_id IN
+                        <foreach collection="mediaIds" item="item" separator="," open="(" close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+            </if>
+            <if test="dailyBeginTime != null and hourlyBeginTime != null">
+                UNION ALL
+            </if>
+            <if test = "hourlyBeginTime != null">
+                SELECT
+                    ${mysqlField} AS id
+                FROM
+                    report_hourly
+                WHERE
+                    timestamp BETWEEN #{hourlyBeginTime} AND #{hourlyEndTime}
+                    <if test="mediaIds != null and mediaIds.size() != 0">
+                        AND media_id IN
+                        <foreach collection="mediaIds" item="item" separator="," open="(" close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+            </if>
+        ) t
+        GROUP BY id
+    </select>
+
+    <!-- 广告网络数据 -->
+    <sql id = "getMediaSdkDaily">
+        SELECT
+            <choose>
+                <when test = "adspotId != null">
+                    CONCAT(channel_id, '_', sdk_adspot_id) AS sdkChannelId,
+                </when>
+                <otherwise>
+                    channel_id AS sdkChannelId,
+                </otherwise>
+            </choose>
+            sum(reqs) as req,
+            sum(bids) AS bid,
+            sum(wins) AS bidWin,
+            sum(shows) AS imp,
+            sum(clicks) AS click,
+            ROUND(sum(income), 2) AS income,
+            sum(report_api_req) AS thirdReq,
+            sum(report_api_bid) AS thirdBid,
+            sum(report_api_imp) AS thirdImp,
+            sum(report_api_click) AS thirdClick,
+            round(sum(report_api_income), 2) AS thirdIncome
+        FROM report_daily
+        WHERE
+            timestamp BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
+            <if test = "adspotId != null">
+                AND adspot_id = #{adspotId}
+            </if>
+        GROUP BY 1
+    </sql>
+
+    <sql id = "getMediaSdkHourly">
+        SELECT
+            <choose>
+                <when test = "adspotId != null">
+                    CONCAT(channel_id, '_', sdk_adspot_id) AS sdkChannelId,
+                </when>
+                <otherwise>
+                    channel_id AS sdkChannelId,
+                </otherwise>
+            </choose>
+            sum(reqs) as req,
+            sum(bids) AS bid,
+            sum(wins) AS bidWin,
+            sum(shows) AS imp,
+            sum(clicks) AS click,
+            ROUND(sum(income), 2) AS income,
+            0 AS thirdReq,
+            0 AS thirdBid,
+            0 AS thirdImp,
+            0 AS thirdClick,
+            0 AS thirdIncome
+        FROM report_hourly
+        WHERE
+            timestamp BETWEEN #{hourlyBeginTime} AND #{hourlyEndTime}
+            <if test = "adspotId != null">
+                AND adspot_id = #{adspotId}
+            </if>
+        GROUP BY 1
+    </sql>
+
+    <select id = "getSdkChannelTrafficData" parameterType = "com.easyads.management.adn.model.data.ChannelDataFilter"
+            resultType = "com.easyads.management.adn.model.data.SdkData">
+        SELECT
+            MEDIA_SDK.sdkChannelId,
+            sum(MEDIA_SDK.req) as req,
+            sum(MEDIA_SDK.bid) AS bid,
+            sum(MEDIA_SDK.bidWin) AS bidWin,
+            sum(MEDIA_SDK.imp) AS imp,
+            sum(MEDIA_SDK.click) AS click,
+            ROUND(sum(MEDIA_SDK.income), 2) AS income,
+            sum(MEDIA_SDK.thirdReq) AS thirdReq,
+            sum(MEDIA_SDK.thirdBid) AS thirdBid,
+            sum(MEDIA_SDK.thirdImp) AS thirdImp,
+            sum(MEDIA_SDK.thirdClick) AS thirdClick,
+            sum(MEDIA_SDK.thirdIncome) AS thirdIncome
+        FROM
+        (
+            <if test = "dailyBeginTime != null and dailyEndTime != null">
+                <include refid="getMediaSdkDaily"/>
+            </if>
+
+            <if test = "dailyBeginTime != null and dailyEndTime != null and hourlyBeginTime != null and hourlyEndTime != null">
+                UNION ALL
+            </if>
+
+            <if test = "hourlyBeginTime != null and hourlyEndTime != null">
+                <include refid="getMediaSdkHourly"/>
+            </if>
+        ) MEDIA_SDK
+        GROUP BY 1
+    </select>
+</mapper>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.FilterMapper">
+    <select id = "getValidMedia" resultType = "com.easyads.management.report.model.bean.filter.MediaFilterUnit">
+        SELECT
+            id AS value,
+            media_name AS name,
+            platform_type AS platform
+        FROM
+            media
+        WHERE
+        (
+            (status = 1 AND mark_delete = 0) <!-- 有效 or 查询时间内有数据 -->
+            <if test="hasDataIds != null and hasDataIds.size() != 0">
+                OR id IN
+                <foreach collection="hasDataIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        )
+        <if test = "mediaIds != null and mediaIds.size() != 0">
+            AND id IN
+            <foreach collection="mediaIds" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+
+    <select id = "getValidAdspot" resultType = "com.easyads.management.report.model.bean.filter.AdspotFilterUnit">
+        SELECT
+            A.id AS value,
+            A.adspot_name AS name
+        FROM adspot A
+        JOIN media B ON A.media_id = B.id
+        WHERE
+        (
+            (A.status = 1 AND A.mark_delete = 0
+            AND B.status = 1 AND B.mark_delete = 0) <!-- 有效 or 查询时间内有数据 -->
+            <if test="hasDataIds != null and hasDataIds.size() != 0">
+                OR A.id IN
+                <foreach collection="hasDataIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        )
+        <if test = "mediaIds != null and mediaIds.size() != 0">
+            AND A.media_id IN
+            <foreach collection="mediaIds" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test = "adspotTypes != null and adspotTypes.size() != 0">
+            AND A.adspot_type IN
+            <foreach collection="adspotTypes" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id = "getValidChannel" resultType = "com.easyads.management.report.model.bean.filter.ChannelFilterUnit">
+        SELECT
+            B.id AS value,
+            B.adn_name AS name
+        FROM adspot_sdk_channel A
+        JOIN
+        (
+            SELECT *
+            FROM sdk_adn
+            WHERE
+            (
+                mark_delete = 0 <!-- 有效 or 查询时间内有数据 -->
+                <if test="hasDataIds != null and hasDataIds.size() != 0">
+                    OR id IN
+                    <foreach collection="hasDataIds" item="item" separator="," open="(" close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            )
+        ) B ON A.adn_id = B.id
+        JOIN adspot C ON A.adspot_id = C.id
+        JOIN media D ON C.media_id = D.id
+        GROUP BY 1,2
+    </select>
+
+    <select id = "getValidMetaAdspot" resultType = "com.easyads.management.report.model.bean.filter.MetaAdspotFilterUnit">
+        SELECT
+            @curRank := @curRank + 1 AS id,
+            X.value,
+            X.name,
+            X.channelId
+        FROM
+        (
+            SELECT
+                JSON_UNQUOTE(JSON_EXTRACT(A.supplier_params, "$.adspot_id")) AS value,
+                CONCAT(D.adn_name, '_', JSON_UNQUOTE(JSON_EXTRACT(A.supplier_params, "$.adspot_id"))) AS name,
+                D.id AS channelId
+            FROM adspot_sdk_channel A
+            JOIN adspot B ON A.adspot_id = B.id
+            JOIN media C ON B.media_id = C.id
+            JOIN sdk_adn D ON A.adn_id = D.id
+            WHERE
+                (
+                    A.mark_delete = 0 <!-- 有效 or 查询时间内有数据 -->
+                    <if test="hasDataIds != null and hasDataIds.size() != 0">
+                        OR CONCAT(D.id, '_', A.supplier_adspot_id) IN
+                        <foreach collection="hasDataIds" item="item" separator="," open="(" close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+                )
+                <if test="null != channelIds and channelIds.size() != 0">
+                    AND D.id in
+                    <foreach collection="channelIds" item="item" separator="," open="(" close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            GROUP BY 1,2,3
+        ) X,
+        (
+            SELECT @curRank := 0
+        ) Y
+    </select>
+</mapper>

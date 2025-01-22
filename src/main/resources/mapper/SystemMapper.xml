@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.SystemMapper">
+
+    <select id = "getSystemCodeList" resultType = "com.easyads.management.common.SystemCode">
+        SELECT id, value, name, extension, parent_value
+        FROM system_code
+        WHERE code_type_id = #{type} AND status = 1
+        ORDER BY id ASC
+    </select>
+
+    <select id = "getDimensionList" resultType = "com.easyads.management.dimension.bean.ChildDimension">
+        SELECT name, value
+        FROM system_code
+        WHERE code_type_id = #{type} AND status = 1
+        ORDER BY id ASC
+    </select>
+
+    <resultMap id = "parentDimensionMap" type = "com.easyads.management.dimension.bean.ParentDimension">
+        <result property = "name" column = "parent_name" />
+        <result property = "value" column = "parent_value" />
+        <collection property = "children" ofType = "com.easyads.management.dimension.bean.ChildDimension" column = "child_name" notNullColumn = "child_name">
+            <result property = "name" column = "child_name" />
+            <result property = "value" column = "child_value" />
+        </collection>
+    </resultMap>
+
+    <select id = "getParentDimensionList" resultMap = "parentDimensionMap">
+        SELECT
+            A.name AS parent_name,
+            A.value AS parent_value,
+            B.name AS child_name,
+            B.value AS child_value
+        FROM
+        (
+            SELECT id, name, value
+            FROM system_code
+            WHERE code_type_id = #{type} AND parent_value IS NULL AND status = 1
+        ) A
+        LEFT OUTER JOIN
+        (
+            SELECT id, parent_value, name, value
+            FROM system_code
+            WHERE code_type_id = #{type} AND parent_value IS NOT NULL AND status = 1
+        ) B ON A.value = B.parent_value
+        ORDER BY A.id ASC, B.id ASC
+    </select>
+
+    <select id = "getDimensionListByFilter" resultType = "com.easyads.management.dimension.bean.ChildDimension">
+        SELECT name, value
+        FROM system_code
+        WHERE
+            code_type_id = #{type} AND status = 1
+            AND extension = #{filter}
+        ORDER BY id ASC
+    </select>
+
+    <resultMap id = "mapResult" type = "com.easyads.management.common.KeyValue">
+        <result property = "key" column = "key_str" />
+        <result property = "value" column = "value_str" />
+    </resultMap>
+
+    <!-- 查询媒体id和name -->
+    <select id = "getMediaIdNameMap" resultMap = "mapResult">
+        SELECT id AS key_str, media_name AS value_str
+        FROM media
+        WHERE mark_delete = 0
+    </select>
+
+    <!-- 获取广告位类型和广告位id的映射关系 -->
+    <select id = "getAdspotTypeIdMap" resultMap = "mapResult">
+        SELECT A.id AS key_str, A.adspot_type AS value_str
+        FROM adspot A
+        JOIN media B ON A.media_id = B.id
+        WHERE A.mark_delete = 0 AND B.mark_delete = 0
+    </select>
+
+    <!-- 获取广告位id和名称的映射关系 -->
+    <select id = "getAdspotIdNameMap" resultMap = "mapResult">
+        SELECT id AS key_str, adspot_name AS value_str
+        FROM adspot
+        WHERE mark_delete = 0
+    </select>
+
+    <!-- 获取adn渠道id和名称映射信息 -->
+    <select id = "getSdkAdnIdNameMap" resultMap = "mapResult">
+        SELECT id AS key_str, adn_name AS value_str
+        FROM sdk_adn
+        WHERE mark_delete = 0
+    </select>
+
+    <!-- -->
+    <select id = "getMediaAdspotPlatformMap" resultMap = "mapResult">
+        SELECT CONCAT("adspot_", A.id) AS key_str, B.platform_type AS value_str
+        FROM adspot A
+        JOIN media B ON A.media_id = B.id
+        WHERE A.mark_delete = 0 AND B.mark_delete = 0
+
+        UNION ALL
+
+        SELECT CONCAT("media_", A.id) AS key_str, A.platform_type AS value_str
+        FROM media A
+        WHERE A.mark_delete = 0
+    </select>
+
+
+    <!-- 报表相关 -->
+    <select id = "getYesterdayMediaReportDailyStatus" resultType = "java.lang.Integer">
+        SELECT count(id)
+        FROM report_daily
+        WHERE timestamp = UNIX_TIMESTAMP(CURDATE() - INTERVAL 1 DAY)
+    </select>
+
+    <select id = "getMediaReportDailyMaxTimestamp" resultType = "java.lang.Long">
+        SELECT max(timestamp) AS timestamp
+        FROM report_daily
+    </select>
+</mapper>

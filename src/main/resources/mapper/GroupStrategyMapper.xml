@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.GroupStrategyMapper">
+
+    <!-- 分组策略设置 -->
+    <resultMap id = "groupStrategyMap" type = "com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy">
+        <result property = "groupTargetId" column = "sdk_group_targeting_id" />
+        <result property = "name" column = "name" />
+        <result property = "priority" column = "priority" />
+
+        <association property = "sdkGroupDirectionOrigin" javaType = "com.easyads.management.distribution.strategy.model.group.SdkGroupDirectionOrigin">
+            <result property = "appVersion" column = "app_version" />
+            <result property = "sdkVersion" column = "sdk_version" />
+        </association>
+    </resultMap>
+
+    <select id = "getAllGroupStrategyMap" resultMap = "groupStrategyMap">
+        SELECT
+            B.id AS sdk_group_targeting_id,
+            B.name,
+            B.priority,
+            B.app_version,
+            B.sdk_version
+        FROM sdk_group A
+        JOIN sdk_group_targeting B ON A.sdk_group_targeting_id = B.id
+        WHERE A.adspot_id = #{adspotId} AND A.sdk_group_percentage_id = #{percentageId}
+    </select>
+
+    <select id = "getAllGroupStrategyList" resultMap = "groupStrategyMap">
+        SELECT
+            B.id AS sdk_group_targeting_id,
+            B.name,
+            B.priority,
+            B.app_version,
+            B.sdk_version
+        FROM sdk_group A
+        JOIN sdk_group_targeting B ON A.sdk_group_targeting_id = B.id
+        WHERE A.adspot_id = #{adspotId} AND A.sdk_group_percentage_id = #{percentageId}
+    </select>
+
+    <insert id = "createOneGroupStrategy" useGeneratedKeys = "true" keyProperty = "groupTargetId"
+            parameterType = "com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy">
+        INSERT INTO sdk_group_targeting
+            (name, priority, app_version, sdk_version)
+        VALUES
+            (#{name}, #{priority}, #{sdkGroupDirectionOrigin.appVersion}, #{sdkGroupDirectionOrigin.sdkVersion})
+    </insert>
+
+    <insert id = "createGroupStrategyList" useGeneratedKeys = "true" keyProperty = "sdkGroupStrategyList.groupTargetId">
+        INSERT INTO sdk_group_targeting
+            (name, priority, app_version, sdk_version)
+        VALUES
+        <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
+            (#{item.name}, #{item.priority}, #{item.sdkGroupDirectionOrigin.appVersion}, #{item.sdkGroupDirectionOrigin.sdkVersion})
+        </foreach>
+    </insert>
+
+    <update id = "updateGroupStrategyList">
+        <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ";">
+            UPDATE sdk_group_targeting
+            SET name = #{item.name}, priority = #{item.priority},
+                app_version = #{item.sdkGroupDirectionOrigin.appVersion},
+                sdk_version = #{item.sdkGroupDirectionOrigin.sdkVersion}
+            WHERE id = #{item.groupTargetId}
+        </foreach>
+    </update>
+
+    <delete id = "deleteGroupStrategyList">
+        DELETE FROM sdk_group_targeting
+        WHERE
+            id IN
+            <foreach collection = "groupTargetIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                #{item}
+            </foreach>
+    </delete>
+</mapper>

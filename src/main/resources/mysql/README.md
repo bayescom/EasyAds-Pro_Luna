@@ -1,0 +1,1 @@
+创建名为easyads的数据库database，并使用文件夹下的sql语句创建相关库表。

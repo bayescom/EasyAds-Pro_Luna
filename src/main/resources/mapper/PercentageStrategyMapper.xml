@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.PercentageStrategyMapper">
+
+    <!-- 流量切分设置 -->
+    <select id = "getTrafficPercentageMap" resultType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy">
+        SELECT
+            B.id AS percentageId,
+            B.tag,
+            B.percentage
+        FROM
+        (
+            SELECT sdk_group_percentage_id
+            FROM sdk_group
+            WHERE adspot_id = #{adspotId}
+            GROUP BY 1
+        ) A
+        JOIN sdk_group_percentage B ON A.sdk_group_percentage_id = B.id
+    </select>
+
+    <select id = "getTrafficPercentageList" resultType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy">
+        SELECT
+            B.id AS percentageId,
+            B.tag,
+            B.percentage
+        FROM
+        (
+            SELECT sdk_group_percentage_id
+            FROM sdk_group
+            WHERE adspot_id = #{adspotId}
+            GROUP BY 1
+        ) A JOIN sdk_group_percentage B ON A.sdk_group_percentage_id = B.id
+    </select>
+
+    <insert id = "createOnePercentage" useGeneratedKeys = "true" keyProperty = "percentageId"
+            parameterType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy">
+        INSERT INTO sdk_group_percentage
+            (tag, percentage)
+        VALUES
+            (#{tag}, #{percentage})
+    </insert>
+
+    <insert id = "createPercentageList" useGeneratedKeys = "true" keyProperty = "trafficPercentageList.percentageId">
+        INSERT INTO sdk_group_percentage
+            (tag, percentage)
+        VALUES
+        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
+            (#{item.tag}, #{item.percentage})
+        </foreach>
+    </insert>
+
+    <update id = "updatePercentageList">
+        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ";">
+            UPDATE sdk_group_percentage
+            SET tag = #{item.tag}, percentage = #{item.percentage}
+            WHERE id = #{item.percentageId}
+        </foreach>
+    </update>
+
+    <delete id = "deletePercentageList">
+        DELETE FROM sdk_group_percentage
+        WHERE
+            id IN
+            <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                #{item}
+            </foreach>
+    </delete>
+</mapper>

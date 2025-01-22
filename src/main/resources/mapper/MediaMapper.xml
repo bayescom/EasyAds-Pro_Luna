@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.MediaMapper">
+    <select id = "getMediaCount" resultType = "java.lang.Integer"
+            parameterType = "com.easyads.management.media.model.MediaFilterParams">
+        SELECT count(id)
+        FROM media
+        WHERE
+            mark_delete = 0
+            <if test="searchText != null">
+                AND (id = #{searchText} OR id rlike #{searchText} OR media_name rlike #{searchText})
+            </if>
+            <if test="platform != null">
+                AND platform_type = #{platform}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+    </select>
+
+    <resultMap id = "resultMediaMap" type = "com.easyads.management.media.model.Media">
+        <result property = "id" column = "id" />
+        <result property = "platformType" column = "platform_type" />
+        <result property = "platformTypeName" column = "platform_type_name" />
+        <result property = "mediaName" column = "media_name" />
+        <result property = "bundleName" column = "bundle_ids" />
+        <result property = "adspotCount" column = "adspot_cnt" />
+        <result property = "status" column = "status" />
+    </resultMap>
+
+
+    <select id = "getMediaList" resultMap = "resultMediaMap"
+            parameterType = "com.easyads.management.media.model.MediaFilterParams">
+        SELECT
+            A.id,
+            A.platform_type,
+            COALESCE(C.name, "") AS platform_type_name,
+            A.media_name,
+            A.bundle_ids,
+            COALESCE(B.adspot_cnt, 0) AS adspot_cnt,
+            A.status
+        FROM
+        (
+            SELECT *
+            FROM media
+            WHERE
+                mark_delete = 0
+                <if test="searchText != null">
+                    AND (id = #{searchText} OR id rlike #{searchText} OR media_name rlike #{searchText})
+                </if>
+                <if test="platform != null">
+                    AND platform_type = #{platform}
+                </if>
+                <if test="status != null">
+                    AND status = #{status}
+                </if>
+            ORDER BY status desc, id desc
+            <if test="limit != null">
+                limit #{limit}
+                <if test="offset != null">
+                    offset #{offset}
+                </if>
+            </if>
+        ) A
+        LEFT OUTER JOIN
+        (
+            SELECT media_id, count(id) AS adspot_cnt
+            FROM adspot
+            WHERE mark_delete = 0
+            GROUP BY media_id
+        ) B ON A.id = B.media_id
+        LEFT OUTER JOIN
+        (
+            SELECT value, name
+            FROM system_code
+            WHERE code_type_id = 1 AND status = 1
+        ) C ON A.platform_type = C.value
+    </select>
+
+    <select id = "getOneMedia" resultMap = "resultMediaMap">
+        SELECT
+            A.id,
+            A.platform_type,
+            COALESCE(C.name, "") AS platform_type_name,
+            A.media_name,
+            A.bundle_ids,
+            COALESCE(B.adspot_cnt, 0) AS adspot_cnt,
+            A.status
+        FROM media A
+        LEFT OUTER JOIN
+        (
+            SELECT media_id, count(id) AS adspot_cnt
+            FROM adspot
+            GROUP BY media_id
+        ) B ON A.id = B.media_id
+        LEFT OUTER JOIN
+        (
+            SELECT value, name
+            FROM system_code
+            WHERE code_type_id = 1 AND status = 1
+        ) C ON A.platform_type = C.value
+        WHERE A.id = #{mediaId}
+    </select>
+
+    <insert id = "createOneMedia" useGeneratedKeys = "true" keyProperty = "id" keyColumn = "id">
+        INSERT INTO media (platform_type, media_name, bundle_ids)
+        VALUES (#{platformType}, #{mediaName}, #{bundleName})
+    </insert>
+
+    <update id = "updateOneMedia">
+        UPDATE media
+        SET media_name = #{media.mediaName}, bundle_ids = #{media.bundleName}, status = #{media.status}
+        WHERE id = #{mediaId}
+    </update>
+
+    <update id = "deleteOneMedia">
+        UPDATE media SET mark_delete = 1, status = 0
+        WHERE id = #{mediaId}
+    </update>
+
+    <update id = "closeOneMediaAllAdspot">
+        UPDATE adspot SET status = 0
+        WHERE media_id = #{mediaId}
+    </update>
+</mapper>

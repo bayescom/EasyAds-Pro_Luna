@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.VersionMapper">
+    <!-- Appver相关接口 -->
+    <select id = "getAppverCount" resultType = "int">
+        SELECT COUNT(*)
+        FROM system_code
+        WHERE code_type_id = #{type}
+            <if test = "filterParams.mediaId != null">
+                AND extension = #{filterParams.mediaId}
+            </if>
+            <if test = "filterParams.status != null">
+                AND status = #{filterParams.status}
+            </if>
+            <if test = "filterParams.searchText != null">
+                AND value rlike #{filterParams.searchText}
+            </if>
+    </select>
+
+    <select id = "getAppverList" resultType = "com.easyads.management.version.model.bean.Appver">
+        SELECT id, extension AS mediaId, name AS version, status
+        FROM system_code
+        WHERE code_type_id = #{type}
+            <if test = "filterParams.mediaId != null">
+                AND extension = #{filterParams.mediaId}
+            </if>
+            <if test = "filterParams.status != null">
+                AND status = #{filterParams.status}
+            </if>
+            <if test = "filterParams.searchText != null">
+                AND value rlike #{filterParams.searchText}
+            </if>
+    </select>
+
+    <select id = "getOneAppver" resultType = "com.easyads.management.version.model.bean.Appver">
+        SELECT id, extension AS mediaId, name AS version, status
+        FROM system_code
+        WHERE code_type_id = #{type} AND id = #{id}
+    </select>
+
+    <insert id = "createOneAppver" useGeneratedKeys = "true" keyProperty = "appver.id" keyColumn = "id">
+        INSERT INTO system_code (code_type_id, value, name, extension, status)
+        VALUES (#{type}, #{appver.version}, #{appver.version}, #{appver.mediaId}, 1)
+    </insert>
+
+    <update id = "updateOneAppver">
+        UPDATE system_code
+        SET value = #{appver.version}, name = #{appver.version}, extension = #{appver.mediaId}, status = #{appver.status}
+        WHERE id = #{id}
+    </update>
+
+    <!-- Sdkver相关接口 -->
+    <select id = "getSdkverCount" resultType = "int">
+        SELECT COUNT(*)
+        FROM system_code
+        WHERE code_type_id = #{type}
+            <if test = "filterParams.status != null">
+                AND status = #{filterParams.status}
+            </if>
+            <if test = "filterParams.searchText != null">
+                AND value rlike #{filterParams.searchText}
+            </if>
+    </select>
+
+    <select id = "getSdkverList" resultType = "com.easyads.management.version.model.bean.Sdkver">
+        SELECT id, name AS version, status
+        FROM system_code
+        WHERE code_type_id = #{type}
+            <if test = "filterParams.status != null">
+                AND status = #{filterParams.status}
+            </if>
+            <if test = "filterParams.searchText != null">
+                AND value rlike #{filterParams.searchText}
+            </if>
+    </select>
+
+    <select id = "getOneSdkver" resultType = "com.easyads.management.version.model.bean.Sdkver">
+        SELECT id, name AS version, status
+        FROM system_code
+        WHERE code_type_id = #{type} AND id = #{id}
+    </select>
+
+    <insert id = "createOneSdkver" useGeneratedKeys = "true" keyProperty = "sdkver.id" keyColumn = "id">
+        INSERT INTO system_code (code_type_id, value, name, status)
+        VALUES (#{type}, #{sdkver.version}, #{sdkver.version}, 1)
+    </insert>
+
+    <update id = "updateOneSdkver">
+        UPDATE system_code
+        SET value = #{sdkver.version}, name = #{sdkver.version}, status = #{sdkver.status}
+        WHERE id = #{id}
+    </update>
+</mapper>

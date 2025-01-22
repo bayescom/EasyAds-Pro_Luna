@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "com.easyads.component.mapper.AdspotMapper">
+
+    <select id = "getAdspotCount" resultType = "java.lang.Integer"
+            parameterType = "com.easyads.management.adspot.model.AdspotFilterParams">
+        SELECT count(A.id)
+        FROM adspot A
+        LEFT OUTER JOIN media B ON A.media_id = B.id
+        WHERE
+            A.mark_delete = 0 AND B.mark_delete = 0
+            <if test="mediaIds != null and mediaIds.size() != 0">
+                AND A.media_id in
+                <foreach collection = "mediaIds" item = "item" separator = "," open = "(" close = ")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "adspotTypes != null and adspotTypes.size() != 0">
+                AND A.adspot_type in
+                <foreach collection = "adspotTypes" item = "item" separator="," open = "(" close = ")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="searchText != null and searchText != ''">
+                AND (A.id = #{searchText} OR A.id rlike #{searchText} OR A.adspot_name rlike #{searchText})
+            </if>
+            <if test="status != null">
+                AND A.status = #{status}
+            </if>
+    </select>
+
+    <resultMap id = "adspotMap" type = "com.easyads.management.adspot.model.Adspot">
+        <result property = "id" column = "id" />
+        <result property = "adspotName" column = "adspot_name" />
+        <result property = "adspotType" column = "adspot_type" />
+        <result property = "adspotTypeName" column = "adspot_type_name" />
+        <result property = "platformType" column = "platform_type" />
+        <result property = "mediaId" column = "media_id" />
+        <result property = "mediaName" column = "media_name" />
+        <result property = "bundleName" column = "bundle_ids" />
+        <result property = "status" column = "status" />
+        <result property = "timeout" column = "timeout" />
+        <result property = "deviceDailyReqLimit" column = "device_daily_req_limit" />
+        <result property = "deviceDailyImpLimit" column = "device_daily_imp_limit" />
+        <result property = "deviceReqInterval" column = "device_req_interval" />
+    </resultMap>
+
+    <select id = "getAdspotList" resultMap = "adspotMap"
+            parameterType = "com.easyads.management.adspot.model.AdspotFilterParams">
+        SELECT
+            A.id,
+            A.adspot_name,
+            A.adspot_type,
+            C.name AS adspot_type_name,
+            B.platform_type,
+            A.media_id,
+            B.media_name,
+            B.bundle_ids,
+            A.status,
+            A.timeout,
+            A.device_daily_req_limit,
+            A.device_daily_imp_limit,
+            A.device_req_interval
+        FROM adspot A
+        LEFT OUTER JOIN media B ON A.media_id = B.id
+        LEFT OUTER JOIN
+        (
+            SELECT value, name
+            FROM system_code
+            WHERE code_type_id = 2 AND status = 1
+        ) C ON A.adspot_type = C.value
+        WHERE
+            A.mark_delete = 0 AND B.mark_delete = 0
+            <if test = "mediaIds != null and mediaIds.size() != 0">
+                AND A.media_id in
+                <foreach collection = "mediaIds" item = "item" separator = "," open = "(" close = ")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "adspotTypes != null and adspotTypes.size() != 0">
+                AND A.adspot_type in
+                <foreach collection = "adspotTypes" item = "item" separator = "," open = "(" close = ")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "searchText != null and searchText != ''">
+                AND (A.id = #{searchText} OR A.id rlike #{searchText} OR A.adspot_name rlike #{searchText})
+            </if>
+            <if test = "status != null">
+                AND A.status = #{status}
+            </if>
+        ORDER BY A.status desc, A.id desc
+        <if test="limit != null">
+            limit #{limit}
+            <if test="offset!=null">
+                offset #{offset}
+            </if>
+        </if>
+    </select>
+
+    <select id = "getOneAdspot" resultMap = "adspotMap">
+        SELECT
+            A.id,
+            A.adspot_name,
+            A.adspot_type,
+            C.name AS adspot_type_name,
+            B.platform_type,
+            A.media_id,
+            B.media_name,
+            B.bundle_ids,
+            A.status,
+            A.timeout,
+            A.device_daily_req_limit,
+            A.device_daily_imp_limit,
+            A.device_req_interval
+        FROM adspot A
+        LEFT OUTER JOIN media B ON A.media_id = B.id
+        LEFT OUTER JOIN
+        (
+            SELECT value, name
+            FROM system_code
+            WHERE code_type_id = 2 AND status = 1
+        ) C ON A.adspot_type = C.value
+        WHERE A.id = #{adspotId}
+    </select>
+
+    <insert id = "createOneAdspot" useGeneratedKeys = "true" keyProperty = "id" keyColumn = "id">
+        INSERT INTO adspot
+            (adspot_name, adspot_type, media_id, timeout, status, mark_delete, device_daily_req_limit, device_daily_imp_limit, device_req_interval)
+        VALUES
+            (#{adspotName}, #{adspotType}, #{mediaId}, #{timeout}, 1, 0,
+            #{deviceDailyReqLimit}, #{deviceDailyImpLimit}, #{deviceReqInterval})
+    </insert>
+
+    <update id = "updateOneAdspot">
+        UPDATE adspot
+        SET adspot_name = #{adspot.adspotName},
+            timeout = #{adspot.timeout},
+            device_daily_req_limit = #{adspot.deviceDailyReqLimit},
+            device_daily_imp_limit = #{adspot.deviceDailyImpLimit},
+            device_req_interval = #{adspot.deviceReqInterval},
+            status = #{adspot.status}
+        WHERE id = #{adspotId}
+    </update>
+
+    <update id = "deleteOneAdspot">
+        UPDATE adspot SET mark_delete = 1, status = 0
+        WHERE id = #{adspotId}
+    </update>
+</mapper>
