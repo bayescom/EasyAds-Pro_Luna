@@ -1,6 +1,6 @@
 # 运行环境
 ## 环境说明
-本wiki只针对ubuntu(24.04 LTS)进行验证，其他系统请自行测试。
+本wiki只针对ubuntu(24.04 LTS)进行验证，其他系统请自行测试。简单测试可以使用Docker进行镜像构建。
 ## Java
 - openjdk: v21.0.5
   
@@ -64,4 +64,16 @@ mvn clean package -Pprod
 ```bash
 # 复制war到Tomcat的webapps下
 cp target/Luna.war $TOMCAT_WEBAPPS/
+```
+
+## Docker
+### 1. 配置更新
+根据需要更新`Dockerfile`中的变量，参考上述配置更新
+### 2. 构建镜像
+```bash
+sudo docker build -t Luna .
+```
+### 3. 运行容器
+```bash
+sudo docker run -dit --name Luna -p 8080:8080 Luna
 ```
