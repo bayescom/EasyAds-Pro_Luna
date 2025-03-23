@@ -2,6 +2,7 @@ package com.easyads.management.media.service;
 
 import com.easyads.component.exception.BadRequestException;
 import com.easyads.component.mapper.MediaMapper;
+import com.easyads.component.mapper.VersionMapper;
 import com.easyads.management.media.model.Media;
 import com.easyads.management.media.model.MediaFilterParams;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,9 @@ public class MediaService {
 
     @Autowired
     private MediaMapper mediaMapper;
+
+    @Autowired
+    private VersionMapper versionMapper;
 
     public Map<String, Object> getMediaList(Map<String, Object> queryParams) throws Exception {
         Map<String, Object> mediaResult = new HashMap(){{
@@ -72,6 +76,8 @@ public class MediaService {
         mediaMapper.deleteOneMedia(mediaId);
         // 关闭媒体下的广告位
         mediaMapper.closeOneMediaAllAdspot(mediaId);
+        // 删除媒体版本信息
+        versionMapper.deleteMediaAppver(mediaId);
         resultMap.put("media", null);
         return resultMap;
     }

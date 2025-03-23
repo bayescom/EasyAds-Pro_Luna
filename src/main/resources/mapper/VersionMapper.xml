@@ -49,6 +49,11 @@
         WHERE id = #{id}
     </update>
 
+    <delete id = "deleteMediaAppver">
+        DELETE FROM system_code
+        WHERE code_type_id = 7 AND extension = #{mediaId}
+    </delete>
+
     <!-- Sdkver相关接口 -->
     <select id = "getSdkverCount" resultType = "int">
         SELECT COUNT(*)
