@@ -17,6 +17,7 @@ public interface VersionMapper {
     Appver getOneAppver(int type, Long id);
     void createOneAppver(int type, Appver appver);
     void updateOneAppver(Long id, Appver appver);
+    void deleteMediaAppver(Long mediaId);
 
     // Sdkver相关接口
     int getSdkverCount(int type, SdkverFilterParams filterParams);
