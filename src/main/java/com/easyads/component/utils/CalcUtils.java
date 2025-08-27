@@ -76,6 +76,14 @@ public class CalcUtils {
         return 0.0f;
     }
 
+    // 请求ecpm保留3位小数
+    public static float calcReqEcpm(Float income, Long req) {
+        if (null != req) {
+            return calcRateFloat(income, 1.0 * req / 1000.0f,3);
+        }
+        return 0.0f;
+    }
+
     public static float calcEcpc(Float income, Long click) {
         return calcRateFloat(income, click,2);
     }
