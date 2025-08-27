@@ -150,7 +150,7 @@ public class MediaReportFilterParams {
         // 如果选了分天/分周而且选了当天/昨天没出来的数据，需要从小时表查询一部分数据
         if (type != 1) {
             // 接口自己补的参数
-            Long latestDailyReportTimeStamp = (Long) queryParams.getOrDefault("latestDailyReportTimeStamp", null);
+            long latestDailyReportTimeStamp = SystemUtils.getMediaReportDailyMaxTimestamp();;
             // 如果结束时间的 当天的开始时间 > 最新的report时间戳，那么需要查小时表
             if (endTime - 3600 * 24 + 1  > latestDailyReportTimeStamp) {
                 hasTodayDailyData = true;

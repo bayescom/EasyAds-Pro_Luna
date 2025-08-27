@@ -103,6 +103,12 @@
         WHERE A.mark_delete = 0
     </select>
 
+    <!-- 获取广告位id和所属媒体id的映射关系 -->
+    <select id = "getAdspotIdMediaIdMap" resultMap = "mapResult">
+        SELECT id AS key_str, media_id AS value_str
+        FROM adspot
+        WHERE mark_delete = 0
+    </select>
 
     <!-- 报表相关 -->
     <select id = "getYesterdayMediaReportDailyStatus" resultType = "java.lang.Integer">

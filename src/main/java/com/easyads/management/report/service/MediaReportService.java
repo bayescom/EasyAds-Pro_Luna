@@ -67,16 +67,7 @@ public class MediaReportService {
         "gapReqPercent", "gapBidPercent", "gapImpPercent", "gapClickPercent",
         "dau", "deu", "incomePerDau", "impPerDau", "impPerDeu", "penetrationRate");
 
-    // 用来拿天报表最新的时间，用来判断当天数据报表有没有完成
-    public void setLatestDailyReportTimeStamp(Map<String, Object> queryParams){
-        if (!"1".equals(queryParams.get("type"))) {
-            Long latestDailyReportTimeStamp = SystemUtils.getMediaReportDailyMaxTimestamp();
-            queryParams.put("latestDailyReportTimeStamp", latestDailyReportTimeStamp);
-        }
-    }
-
     public Pair<MediaReportFilterParams, MediaReportFilterParams> genMediaReportFilterWithContrast(Map<String, Object> queryParams) throws Exception {
-        setLatestDailyReportTimeStamp(queryParams);
         MediaReportFilterParams mediaReportFilterParams = new MediaReportFilterParams(queryParams, false);
         MediaReportFilterParams contrastMediaReportFilterParams = null;
 
@@ -395,7 +386,6 @@ public class MediaReportService {
     }
 
     public MediaReportFilterParams genMediaReportFilter(Map<String, Object> queryParams) throws Exception {
-        setLatestDailyReportTimeStamp(queryParams);
         MediaReportFilterParams mediaReportFilterParams = new MediaReportFilterParams(queryParams, false);
 
         if(mediaReportFilterParams.isParamsInvalid()) throw new BadRequestException("请求参数异常");
