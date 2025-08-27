@@ -31,7 +31,7 @@ java -version
 2. 使用src/main/resources/mysql目录下的sql文件创建数据表；
 
 ## 2. 修改配置中的数据库信息
-配置文件为`src/main/resources/application-prod.properties`，将`MySQL`和`Redis`更改为自己的配置。
+配置文件为`src/main/resources/application.properties`，将`MySQL`和`Redis`更改为自己的配置。
 ```
 ...
 # easyads db
@@ -56,7 +56,7 @@ spring.redis.easyads.password = yourpassword
 ## 3. 编译部署
 ```bash
 # 执行构建
-mvn clean package -Pprod
+mvn clean package
 # 建议通过Tomcat/Jetty托管
 ```
 
