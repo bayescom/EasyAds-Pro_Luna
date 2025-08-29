@@ -32,6 +32,11 @@ public class SdkChannel {
     private SdkParams params;
     private SdkData data;
     private SdkAdnReportApi reportApiParam;
+    // 因为自动创建三方广告位新增如下字段
+    // 是否自动创建的
+    private Integer isAutoCreate = 0;
+    private Long cpmUpdateTime;
+    private String supplierAdspotConfig = null; // 直接存储JSON字符串
 
     public Integer getId() {
         return id;
@@ -215,6 +220,31 @@ public class SdkChannel {
 
     public void setReportApiParam(SdkAdnReportApi reportApiParam) {
         this.reportApiParam = reportApiParam;
+    }
+
+    public Integer getIsAutoCreate() {
+        return isAutoCreate;
+    }
+
+    public void setIsAutoCreate(Integer isAutoCreate) {
+        this.isAutoCreate = isAutoCreate;
+    }
+
+    public Long getCpmUpdateTime() {
+        return cpmUpdateTime;
+    }
+
+    public void setCpmUpdateTime(Long cpmUpdateTime) {
+        this.cpmUpdateTime = cpmUpdateTime;
+    }
+
+    @JsonIgnore
+    public String getSupplierAdspotConfig() {
+        return supplierAdspotConfig;
+    }
+
+    public void setSupplierAdspotConfig(String supplierAdspotConfig) {
+        this.supplierAdspotConfig = supplierAdspotConfig;
     }
 
     public void completeDbBean() {

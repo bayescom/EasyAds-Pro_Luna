@@ -14,6 +14,9 @@
         <result property = "timeout" column = "time_out" />
         <result property = "params" column="supplier_params" typeHandler="com.easyads.component.mybatis.JsonTypeHandler" />
         <result property = "adnParamsMeta" column = "params_meta" typeHandler = "com.easyads.component.mybatis.JsonArrayTypeHandler" />
+        <result property = "cpmUpdateTime" column = "cpm_update_time" />
+        <result property = "isAutoCreate" column = "is_auto_create" />
+        <result property = "supplierAdspotConfig" column = "supplier_adspot_config" />
 
         <association property = "requestLimit" javaType = "com.easyads.management.distribution.sdk.model.SdkRequestLimit">
             <result property = "dailyReqLimit" column = "daily_req_limit" />
@@ -35,6 +38,7 @@
             <result property = "name" column = "report_api_account_name" />
             <result property = "params" column = "report_api_params" />
             <result property = "status" column = "report_api_params_status" />
+            <result property = "autoCreateStatus" column = "report_api_auto_create_status" />
         </association>
     </resultMap>
 
@@ -55,6 +59,9 @@
             A.device_daily_req_limit,
             A.device_daily_imp_limit,
             A.device_request_interval,
+            A.cpm_update_time,
+            A.is_auto_create,
+            A.supplier_adspot_config,
             COALESCE(A.location_list, "") AS location_list,
             COALESCE(A.make_list, "") AS make_list,
             COALESCE(A.osv_list, "") AS osv_list,
@@ -63,7 +70,8 @@
             C.id AS report_api_id,
             COALESCE(C.account_name, A.name) AS report_api_account_name,
             C.params AS report_api_params,
-            C.status AS report_api_params_status
+            C.status AS report_api_params_status,
+            C.auto_create_status AS report_api_auto_create_status
         FROM
         (
             SELECT *
@@ -120,6 +128,9 @@
             A.device_daily_req_limit,
             A.device_daily_imp_limit,
             A.device_request_interval,
+            A.cpm_update_time,
+            A.is_auto_create,
+            A.supplier_adspot_config,
             COALESCE(A.location_list, "") AS location_list,
             COALESCE(A.make_list, "") AS make_list,
             COALESCE(A.osv_list, "") AS osv_list,
@@ -128,7 +139,8 @@
             C.id AS report_api_id,
             COALESCE(C.account_name, A.name) AS report_api_account_name,
             C.params AS report_api_params,
-            C.status AS report_api_params_status
+            C.status AS report_api_params_status,
+            C.auto_create_status AS report_api_auto_create_status
         FROM
         (
             SELECT *
@@ -157,7 +169,9 @@
             bid_price, is_head_bidding, bid_ratio,
             daily_req_limit, daily_imp_limit,
             device_daily_req_limit, device_daily_imp_limit, device_request_interval,
-            location_list, make_list, osv_list, app_versions
+            location_list, make_list, osv_list, app_versions,
+            cpm_update_time, is_auto_create,
+            supplier_adspot_config
         )
         VALUES
         (
@@ -167,7 +181,9 @@
             #{sdkChannel.requestLimit.dailyReqLimit}, #{sdkChannel.requestLimit.dailyImpLimit},
             #{sdkChannel.requestLimit.deviceDailyReqLimit}, #{sdkChannel.requestLimit.deviceDailyImpLimit}, #{sdkChannel.requestLimit.deviceRequestInterval},
             #{sdkChannel.directionOrigin.locationList}, #{sdkChannel.directionOrigin.makeList},
-            #{sdkChannel.directionOrigin.osvList}, #{sdkChannel.directionOrigin.appVersion}
+            #{sdkChannel.directionOrigin.osvList}, #{sdkChannel.directionOrigin.appVersion},
+            #{sdkChannel.cpmUpdateTime}, #{sdkChannel.isAutoCreate},
+            #{sdkChannel.supplierAdspotConfig}
         )
     </insert>
 
@@ -189,9 +205,20 @@
             location_list = #{sdkChannel.directionOrigin.locationList},
             make_list = #{sdkChannel.directionOrigin.makeList},
             osv_list = #{sdkChannel.directionOrigin.osvList},
-            app_versions = #{sdkChannel.directionOrigin.appVersion}
+            app_versions = #{sdkChannel.directionOrigin.appVersion},
+            is_auto_create = #{sdkChannel.isAutoCreate},
+            cpm_update_time = #{sdkChannel.cpmUpdateTime},
+            supplier_adspot_config = #{sdkChannel.supplierAdspotConfig}
         WHERE
             id = #{sdkChannelId} AND adspot_id = #{adspotId}
+    </update>
+
+    <update id = "updateOneAdspotSdkChannelSupplierAdspotConfig">
+        UPDATE adspot_sdk_channel
+        SET
+        supplier_adspot_config = #{sdkChannel.supplierAdspotConfig}
+        WHERE
+        id = #{sdkChannelId} AND adspot_id = #{adspotId}
     </update>
 
     <update id = "deleteOneAdspotSdkChannel">

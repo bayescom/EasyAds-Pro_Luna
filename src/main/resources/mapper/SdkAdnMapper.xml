@@ -38,6 +38,7 @@
         <result property = "adnName" column = "adn_name" />
         <result property = "status" column = "status" />
         <result property = "reportApiStatus" column = "report_api_status" />
+        <result property = "supportAutoCreate" column = "support_auto_create" />
         <result property = "adnParamsMeta" column = "params_meta" typeHandler = "com.easyads.component.mybatis.JsonArrayTypeHandler" />
         <result property = "reportApiParamsMeta" column = "report_api_meta" typeHandler = "com.easyads.component.mybatis.JsonArrayTypeHandler" />
         <collection property = "reportApiParams" ofType = "com.easyads.management.adn.model.bean.SdkAdnReportApi">
@@ -45,6 +46,7 @@
             <result property = "name" column = "report_api_account_name" />
             <result property = "params" column = "report_api_params" />
             <result property = "status" column = "report_api_params_status" />
+            <result property = "autoCreateStatus" column = "report_api_auto_create_status" />
         </collection>
     </resultMap>
 
@@ -56,11 +58,13 @@
             A.status,
             A.params_meta,
             A.report_api_meta,
+            A.support_auto_create,
             IF(COALESCE(C.count, 0) > 0, 1, 0) AS report_api_status,
             B.id AS report_api_id,
             B.account_name AS report_api_account_name,
             B.params AS report_api_params,
-            B.status AS report_api_params_status
+            B.status AS report_api_params_status,
+            COALESCE(B.auto_create_status, 0) AS report_api_auto_create_status
         FROM
         (
             SELECT
@@ -68,7 +72,7 @@
                 IF(Y.adn_id IS NULL, 0, 1) AS status
             FROM
             (
-                SELECT id, adn_name, params_meta, report_api_meta
+                SELECT id, adn_name, params_meta, report_api_meta, support_auto_create
                 FROM sdk_adn
                 WHERE status = 1 AND mark_delete = 0
             ) X
@@ -122,11 +126,13 @@
             A.status,
             A.params_meta,
             A.report_api_meta,
+            A.support_auto_create,
             IF(COALESCE(C.count, 0) > 0, 1, 0) AS report_api_status,
             B.id AS report_api_id,
             B.account_name AS report_api_account_name,
             B.params AS report_api_params,
-            B.status AS report_api_params_status
+            B.status AS report_api_params_status,
+            COALESCE(B.auto_create_status, 0) AS report_api_auto_create_status
         FROM sdk_adn A
         LEFT OUTER JOIN
         (
@@ -155,14 +161,14 @@
 
     <insert id = "createSdkAdnOneReportApi" useGeneratedKeys="true" keyProperty="sdkAdnReportApi.id">
         INSERT INTO sdk_report_api_params
-            (adn_id, account_name, params)
-        VALUES(#{sdkAdnId}, #{sdkAdnReportApi.name}, #{sdkAdnReportApi.params})
+            (adn_id, account_name, params, auto_create_status)
+        VALUES(#{sdkAdnId}, #{sdkAdnReportApi.name}, #{sdkAdnReportApi.params}, #{sdkAdnReportApi.autoCreateStatus})
     </insert>
 
     <update id = "updateSdkAdnOneReportApi"
             parameterType = "com.easyads.management.adn.model.bean.SdkAdnReportApi">
         UPDATE sdk_report_api_params
-        SET account_name = #{name}, params = #{params}, status = #{status}
+        SET account_name = #{name}, params = #{params}, status = #{status}, auto_create_status = #{autoCreateStatus}
         WHERE id = #{id}
     </update>
 

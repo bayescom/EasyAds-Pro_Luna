@@ -16,6 +16,8 @@ public class SdkAdnReportApi {
     protected String params;
     protected Map<String, String> channelParams = new HashMap<>();
     protected int status;
+    //  自动创建广告位功能状态
+    protected int autoCreateStatus;
 
     public Map<String, String> getChannelParams() {
         if(StringUtils.isNotBlank(this.params)) {
