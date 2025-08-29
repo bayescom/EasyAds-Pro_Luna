@@ -1,7 +1,8 @@
 package com.easyads.component.mapper;
 
 import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
-import com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy;
+import com.easyads.management.distribution.strategy.model.percentage.SdkPercentage;
+import com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentage;
 import com.easyads.management.distribution.traffic.model.SdkTrafficSingle;
 import com.easyads.management.distribution.traffic.model.SdkTraffic;
 import com.easyads.management.distribution.traffic.model.SdkTrafficGroupSimple;
@@ -15,6 +16,8 @@ public interface SdkTrafficMapper {
     // 流量分发页面相关操作数据库查询
     // 获取广告位上的SDK分发
     List<SdkTraffic> getOneAdspotSdkTrafficDetail(Integer adspotId, Integer percentageId);
+    // 获取指定某个策略下的流量分发详细信息
+    SdkTraffic getOneAdspotSdkTargetTrafficDetail(Integer adspotId, Long percentageId, Long targetId, Long targetPercentageId);
     // 获取广告位上的SDK分发的简易信息
     SdkTrafficGroupSimple getOneAdspotOneSdkTrafficSimple(Long adspotId, Long sdkTrafficId);
     // 更新流量分发组的分发信息
@@ -25,8 +28,9 @@ public interface SdkTrafficMapper {
     List<SdkTrafficGroupSimple> getOneAdspotSdkTrafficSimple(Long adspotId, Integer sdkChannelId);
 
     // 因为流量分组的改动更新流量分发信息
-    int createPercentageTraffic(Integer adspotId, List<SdkPercentageStrategy> trafficPercentageList,
-                                List<SdkGroupStrategy> sdkGroupStrategyList);
+    int createPercentageTraffic(Integer adspotId, List<SdkPercentage> trafficPercentageList,
+                                List<SdkGroupStrategy> sdkGroupStrategyList,
+                                List<SdkTargetPercentage> sdkTargetPercentageList);
     int deletePercentageTraffic(Set<Integer> percentageIdList);
 
     // 因为分发策略的改动更新流量分发信息

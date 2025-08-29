@@ -3,7 +3,7 @@
 <mapper namespace = "com.easyads.component.mapper.PercentageStrategyMapper">
 
     <!-- 流量切分设置 -->
-    <select id = "getTrafficPercentageMap" resultType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy">
+    <select id = "getTrafficPercentageMap" resultType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentage">
         SELECT
             B.id AS percentageId,
             B.tag,
@@ -18,7 +18,7 @@
         JOIN sdk_group_percentage B ON A.sdk_group_percentage_id = B.id
     </select>
 
-    <select id = "getTrafficPercentageList" resultType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy">
+    <select id = "getTrafficPercentageList" resultType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentage">
         SELECT
             B.id AS percentageId,
             B.tag,
@@ -33,12 +33,83 @@
     </select>
 
     <insert id = "createOnePercentage" useGeneratedKeys = "true" keyProperty = "percentageId"
-            parameterType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy">
+            parameterType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentage">
         INSERT INTO sdk_group_percentage
             (tag, percentage)
         VALUES
             (#{tag}, #{percentage})
     </insert>
+
+    <insert id = "createPercentage" useGeneratedKeys = "true" keyProperty = "trafficPercentageList.percentageId">
+        INSERT INTO sdk_group_percentage
+        (exp_id, tag, percentage, status)
+        VALUES
+        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
+            (#{item.expId}, #{item.tag}, #{item.percentage}, #{item.status})
+        </foreach>
+    </insert>
+
+    <update id = "updatePercentage">
+        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ";">
+            UPDATE sdk_group_percentage
+            SET exp_id = #{item.expId}, tag = #{item.tag}, percentage = #{item.percentage}, status = #{item.status}
+            WHERE id = #{item.percentageId}
+        </foreach>
+    </update>
+
+    <!-- 流量切分更新导致分发设置更新 -->
+    <insert id = "createPercentageTraffic">
+        INSERT INTO sdk_group
+        (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
+        VALUES
+        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
+            (#{adspotId}, #{item.percentageId},
+            #{sdkGroupStrategyList[${index}].groupTargetId}, #{sdkTargetPercentageList[${index}].targetPercentageId})
+        </foreach>
+    </insert>
+
+    <!-- 级联删除多个表的内容 -->
+    <delete id = "deletePercentageTrafficCascade">
+        DELETE FROM sdk_group_percentage
+        WHERE
+        id IN
+        <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+            #{item}
+        </foreach>;
+
+        DELETE FROM sdk_group_targeting
+        WHERE
+        id IN
+        (
+        SELECT sdk_group_targeting_id
+        FROM sdk_group
+        WHERE sdk_group_percentage_id IN
+        <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+            #{item}
+        </foreach>
+        GROUP BY 1
+        );
+
+        DELETE FROM sdk_targeting_percentage
+        WHERE
+        id IN
+        (
+        SELECT sdk_group_targeting_percentage_id
+        FROM sdk_group
+        WHERE sdk_group_percentage_id IN
+        <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+            #{item}
+        </foreach>
+        GROUP BY 1
+        );
+
+        DELETE FROM sdk_group
+        WHERE
+        sdk_group_percentage_id IN
+        <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+            #{item}
+        </foreach>
+    </delete>
 
     <insert id = "createPercentageList" useGeneratedKeys = "true" keyProperty = "trafficPercentageList.percentageId">
         INSERT INTO sdk_group_percentage

@@ -3,7 +3,7 @@ package com.easyads.management.experiment.exp.service;
 
 import com.easyads.component.exception.BadRequestException;
 import com.easyads.component.mapper.SdkExperimentMapper;
-import com.easyads.management.experiment.exp.model.bean.SdkExperiment;
+import com.easyads.management.experiment.exp.model.bean.SdkExperimentBean;
 import com.easyads.management.experiment.exp.model.bean.SdkExperimentFilterUnit;
 import com.easyads.management.experiment.exp.model.filter.SdkExperimentFilterParams;
 import com.easyads.management.report.model.bean.filter.AdspotFilterUnit;
@@ -31,7 +31,7 @@ public class SdkExperimentService {
         }};
 
         int sdkExperimentCount = sdkExperimentMapper.getSdkExperimentCount(filterParams);
-        List<SdkExperiment> sdkExperimentList = sdkExperimentMapper.getSdkExperimentList(filterParams);
+        List<SdkExperimentBean> sdkExperimentList = sdkExperimentMapper.getSdkExperimentList(filterParams);
 
 
         ((Map)sdkExperimentResult.get("meta")).put("total", sdkExperimentCount);
@@ -44,7 +44,7 @@ public class SdkExperimentService {
         Map<String, Object> resultMap = new HashMap(){{
             put("sdk_experiment", new ArrayList<>());
         }};
-        SdkExperiment sdkExperiment = sdkExperimentMapper.getOneSdkExperimentByExpId(id);
+        SdkExperimentBean sdkExperiment = sdkExperimentMapper.getOneSdkExperimentByExpId(id);
 
         resultMap.put("sdk_experiment", sdkExperiment);
         return resultMap;

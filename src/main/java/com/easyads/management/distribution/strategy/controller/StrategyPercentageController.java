@@ -4,7 +4,8 @@ package com.easyads.management.distribution.strategy.controller;
 import com.easyads.component.exception.BadRequestException;
 import com.easyads.component.rpc.ResponseCodeUtils;
 import com.easyads.component.utils.JsonUtils;
-import com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy;
+import com.easyads.management.distribution.strategy.model.percentage.SdkPercentage;
+import com.easyads.management.distribution.strategy.model.percentage.SdkTrafficPercentageExperiment;
 import com.easyads.management.distribution.strategy.service.StrategyPercentageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +18,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value="/adspot/sdk")
+// AB测试-流量分组
 public class StrategyPercentageController {
 
     @Autowired
@@ -45,8 +47,8 @@ public class StrategyPercentageController {
                                           @RequestBody String requestBody,
                                           HttpServletRequest request, HttpServletResponse response) {
         try {
-            List<SdkPercentageStrategy> sdkTrafficPercentageList = JsonUtils.convertJsonNodeToList(JsonUtils.getJsonNode(requestBody).get("trafficPercentageList"), SdkPercentageStrategy.class);
-            return adspotSdkPercentageService.updateTrafficPercentage(adspotId, sdkTrafficPercentageList);
+            SdkTrafficPercentageExperiment sdkTrafficPercentageExperiment = JsonUtils.convertJsonNodeToObject(JsonUtils.getJsonNode(requestBody).get("trafficPercentageList"), SdkTrafficPercentageExperiment.class);
+            return adspotSdkPercentageService.updateTrafficPercentage(adspotId, sdkTrafficPercentageExperiment);
         } catch (BadRequestException e) {
             response.setStatus(400);
             request.setAttribute("message", e.getMessage());

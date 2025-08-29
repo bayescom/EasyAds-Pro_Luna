@@ -41,10 +41,109 @@
     <insert id = "createOneGroupStrategy" useGeneratedKeys = "true" keyProperty = "groupTargetId"
             parameterType = "com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy">
         INSERT INTO sdk_group_targeting
-            (name, priority, app_version, sdk_version)
+        (name, priority, app_version, sdk_version, location_list, make_list, osv_list)
         VALUES
-            (#{name}, #{priority}, #{sdkGroupDirectionOrigin.appVersion}, #{sdkGroupDirectionOrigin.sdkVersion})
+            (#{name}, #{priority}, #{sdkGroupDirectionOrigin.appVersion}, #{sdkGroupDirectionOrigin.sdkVersion},
+             #{sdkGroupDirectionOrigin.locationList}, #{sdkGroupDirectionOrigin.makeList},
+             #{sdkGroupDirectionOrigin.osvList})
     </insert>
+
+    <insert id = "createGroupStrategy" useGeneratedKeys = "true" keyProperty = "sdkGroupStrategyList.groupTargetId">
+        INSERT INTO sdk_group_targeting
+        (name, priority, app_version, sdk_version, location_list, make_list, osv_list)
+        VALUES
+        <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
+            (#{item.name}, #{item.priority}, #{item.sdkGroupDirectionOrigin.appVersion}, #{item.sdkGroupDirectionOrigin.sdkVersion},
+            #{item.sdkGroupDirectionOrigin.locationList}, #{item.sdkGroupDirectionOrigin.makeList},
+            #{item.sdkGroupDirectionOrigin.osvList})
+        </foreach>
+    </insert>
+
+    <update id = "updateGroupStrategy">
+        <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ";">
+            UPDATE sdk_group_targeting
+            SET name = #{item.name}, priority = #{item.priority},
+            app_version = #{item.sdkGroupDirectionOrigin.appVersion},
+            sdk_version = #{item.sdkGroupDirectionOrigin.sdkVersion},
+            location_list = #{item.sdkGroupDirectionOrigin.locationList},
+            make_list = #{item.sdkGroupDirectionOrigin.makeList},
+            osv_list = #{item.sdkGroupDirectionOrigin.osvList}
+            WHERE id = #{item.groupTargetId}
+        </foreach>
+    </update>
+
+    <delete id = "deleteGroupStrategy">
+        DELETE FROM sdk_group_targeting
+        WHERE
+        id IN
+        <foreach collection = "groupTargetIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id = "getOneTargetStrategy" resultType = "com.easyads.management.distribution.strategy.model.group.SdkGroupStrategySummary">
+        SELECT
+            A.id,
+            A.sdk_version,
+            A.app_version,
+            A.location_list,
+            A.make_list,
+            A.osv_list,
+            COALESCE(B.customer_key, "") AS customer_key,
+            C.operator AS device_package_operator,
+            COALESCE(C.device_package_list, "") AS device_package_list
+        FROM
+            (
+                SELECT *
+                FROM sdk_group_targeting
+                WHERE id = #{groupTargetId}
+            ) A
+                LEFT OUTER JOIN
+            (
+                SELECT
+                    M.model_id,
+                    GROUP_CONCAT(DISTINCT M.name) AS customer_key
+                FROM
+                    (
+                        SELECT
+                            X.model_id, X.name, X.operator,
+                            SUBSTRING_INDEX(SUBSTRING_INDEX(X.dimension_value, ',', Y.id + 1), ',', -1) AS dimension_option_id
+                        FROM
+                            (
+                                SELECT t.model_id, t.operator, d.key AS customer_key, d.`name`, t.dimension_value
+                                FROM targeting_item t
+                                         JOIN dimension d ON t.dimension_id = d.id
+                                WHERE t.model_type = 3
+                            ) X
+                                INNER JOIN id_table Y ON Y.id &lt; (length(X.dimension_value) - length(REPLACE(X.dimension_value, ',','')) + 1)
+                    ) M
+                        JOIN dimension_option N ON M.dimension_option_id = N.id
+                GROUP BY 1
+            ) B ON A.id = B.model_id
+                LEFT OUTER JOIN
+            (
+                SELECT
+                    XX.model_id, XX.operator,
+                    GROUP_CONCAT(YY.package_name) AS device_package_list
+                FROM
+                    (
+                        SELECT
+                            M.package_id, M.model_id, M.operator
+                        FROM
+                            (
+                                SELECT
+                                    X.model_id, X.operator,
+                                    SUBSTRING_INDEX(SUBSTRING_INDEX(X.dimension_value, ',', Y.id + 1), ',', -1) AS package_id
+                                FROM targeting_item X
+                                         INNER JOIN id_table Y ON Y.id &lt; (length(X.dimension_value) - length(REPLACE(X.dimension_value, ',','')) + 1)
+                                WHERE X.model_type = 3
+                            ) M
+                        WHERE M.model_id is NOT NULL AND M.package_id != ''
+                    ) XX
+                        JOIN targeting_device_package YY ON XX.package_id = YY.id
+                GROUP BY 1,2
+            ) C ON A.id = C.model_id
+    </select>
 
     <insert id = "createGroupStrategyList" useGeneratedKeys = "true" keyProperty = "sdkGroupStrategyList.groupTargetId">
         INSERT INTO sdk_group_targeting

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyads.component.mapper.SdkChannelExperimentMapper">
+
+    <select id = "getSdkExperimentByName" resultType = "com.easyads.management.distribution.strategy.model.exp.SdkExperiment">
+        SELECT
+            id AS expId,
+            experiment_type AS expType,
+            experiment_name AS expName,
+            status
+        FROM sdk_experiment
+        WHERE experiment_name = #{expName}
+    </select>
+
+    <insert id = "createSdkExperiment" useGeneratedKeys = "true" keyProperty = "sdkExperiment.expId">
+        INSERT INTO sdk_experiment (adspot_id, experiment_name, experiment_type, status)
+        VALUES (#{adspotId}, #{sdkExperiment.expName}, #{expType}, 1)
+    </insert>
+
+    <update id = "updateSdkExperiment" parameterType = "com.easyads.management.distribution.strategy.model.exp.SdkExperiment">
+        UPDATE sdk_experiment
+        SET experiment_name = #{expName}
+        WHERE id = #{expId}
+    </update>
+
+    <update id = "closeSdkExperiment">
+        UPDATE sdk_experiment
+        SET end_at = CURRENT_TIMESTAMP, status = 0
+        WHERE id = #{expId}
+    </update>
+</mapper>

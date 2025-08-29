@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyads.component.mapper.TargetPercentageStrategyMapper">
+
+    <!-- 策略下的分组 -->
+    <select id = "getTargetPercentageMap" resultType = "com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentage">
+        SELECT
+            B.id AS targetPercentageId,
+            B.tag,
+            B.percentage,
+            B.status
+        FROM
+        (
+            SELECT sdk_group_targeting_percentage_id
+            FROM sdk_group
+            WHERE adspot_id = #{adspotId} AND sdk_group_percentage_id = #{percentageId} AND sdk_group_targeting_id = #{targetId}
+        ) A
+        JOIN sdk_targeting_percentage B ON A.sdk_group_targeting_percentage_id = B.id
+    </select>
+
+    <insert id = "createOneTargetPercentage" useGeneratedKeys="true" keyProperty = "targetPercentageId"
+        parameterType = "com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentage">
+        INSERT INTO sdk_targeting_percentage
+            (exp_id, tag, percentage, status)
+        VALUES
+            (#{expId}, #{tag}, #{percentage}, #{status})
+    </insert>
+
+    <insert id = "createTargetPercentage" useGeneratedKeys = "true" keyProperty = "targetPercentageList.targetPercentageId">
+        INSERT INTO sdk_targeting_percentage
+            (exp_id, tag, percentage, status)
+        VALUES
+            <foreach collection = "targetPercentageList" item = "item" index = "index" separator = ",">
+                (#{item.expId}, #{item.tag}, #{item.percentage}, #{item.status})
+            </foreach>
+    </insert>
+
+    <update id = "updateTargetPercentage">
+        <foreach collection = "targetPercentageList" item = "item" index = "index" separator = ";">
+            UPDATE sdk_targeting_percentage
+            SET exp_id = #{item.expId}, tag = #{item.tag}, percentage = #{item.percentage}, status = #{item.status}
+            WHERE id = #{item.targetPercentageId}
+        </foreach>
+    </update>
+
+    <!-- 分组策略更新导致分发设置更新 -->
+    <insert id = "createOnePercentageGroupStrategyTraffic" useGeneratedKeys = "true" keyProperty = "id"
+        parameterType = "com.easyads.management.distribution.traffic.model.SdkTrafficSingle">
+        INSERT INTO sdk_group
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
+        VALUES (#{adspotId}, #{percentageId}, #{groupTargetId}, #{targetPercentageId})
+    </insert>
+
+    <insert id = "createGroupStrategyTraffic">
+        INSERT INTO sdk_group
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
+        VALUES
+            <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
+                (#{adspotId}, #{percentageId}, #{item.groupTargetId}, #{sdkTargetPercentageList[${index}].targetPercentageId})
+            </foreach>
+    </insert>
+
+    <insert id = "createGroupStrategyTrafficWithSupplier">
+        INSERT INTO sdk_group
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id,
+                sdk_group_targeting_percentage_id, supplier_ids)
+        VALUES
+            <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
+                (#{adspotId}, #{percentageId}, #{item.groupTargetId},
+                    #{sdkTargetPercentageList[${index}].targetPercentageId}, #{supplierTraffic[${index}]})
+            </foreach>
+    </insert>
+
+    <delete id = "deleteGroupStrategyTraffic">
+        DELETE FROM sdk_group
+        WHERE
+            sdk_group_targeting_id IN
+            <foreach collection = "groupTargetIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                #{item}
+            </foreach>
+    </delete>
+
+    <!-- 分发策略的分组改动更新流量分发信息 -->
+    <insert id = "createTargetPercentageTraffic">
+        INSERT INTO sdk_group
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
+        VALUES
+            <foreach collection = "sdkTargetPercentageList" item = "item" index = "index" separator = ",">
+                (#{adspotId}, #{percentageId}, #{targetId}, #{item.targetPercentageId})
+            </foreach>
+    </insert>
+
+    <insert id = "createTargetPercentageTrafficWithSupplier">
+        INSERT INTO sdk_group
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id,
+                sdk_group_targeting_percentage_id, supplier_ids)
+        VALUES
+            <foreach collection = "sdkTargetPercentageList" item = "item" index = "index" separator = ",">
+                (#{adspotId}, #{percentageId}, #{targetId}, #{item.targetPercentageId}, #{supplierTraffic})
+            </foreach>
+    </insert>
+
+    <!-- 级联删除多个表的内容 -->
+    <delete id = "deleteTargetPercentageTrafficCascade">
+        DELETE FROM sdk_targeting_percentage
+        WHERE
+            id IN
+            <foreach collection = "targetPercentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                #{item}
+            </foreach>;
+
+        DELETE FROM sdk_group
+        WHERE
+            sdk_group_percentage_id = #{percentageId}
+            AND sdk_group_targeting_id = #{targetId}
+            AND sdk_group_targeting_percentage_id IN
+            <foreach collection = "targetPercentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                #{item}
+            </foreach>
+    </delete>
+</mapper>
