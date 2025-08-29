@@ -1,12 +1,17 @@
 package com.easyads.management.distribution.strategy.model.group;
 
+import com.easyads.component.enums.DirectionTypeEnum;
 import com.easyads.component.utils.DataStringUtils;
 import com.easyads.management.common.Direction;
+import com.easyads.management.distribution.strategy.model.direction.DimensionTarget;
+import com.easyads.management.distribution.strategy.model.direction.TrafficTarget;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -16,12 +21,16 @@ public class SdkGroupStrategy {
     private int priority;
     private Map<String, Direction> direction;
     private SdkGroupDirectionOrigin sdkGroupDirectionOrigin;
+    private List<DimensionTarget> dimensionTargetList;
+    private List<TrafficTarget> customerDirection;
 
     public SdkGroupStrategy() {
         this.groupTargetId = null;
         this.name = "默认分组";
         this.priority = 1;
-        this.sdkGroupDirectionOrigin = new SdkGroupDirectionOrigin(StringUtils.EMPTY, StringUtils.EMPTY);
+        this.sdkGroupDirectionOrigin = new SdkGroupDirectionOrigin(StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY);
+        this.dimensionTargetList = new ArrayList<>();
+        this.customerDirection = new ArrayList<>();
     }
 
     public Long getGroupTargetId() {
@@ -55,6 +64,38 @@ public class SdkGroupStrategy {
 
     public void setSdkGroupDirectionOrigin(SdkGroupDirectionOrigin sdkGroupDirectionOrigin) {
         this.sdkGroupDirectionOrigin = sdkGroupDirectionOrigin;
+    }
+
+    @JsonIgnore
+    public List<DimensionTarget> getDimensionTargetList() {
+        return dimensionTargetList;
+    }
+
+    public void setDimensionTargetList(List<DimensionTarget> dimensionTargetList) {
+        this.dimensionTargetList = dimensionTargetList;
+    }
+
+    public List<TrafficTarget> getCustomerDirection() {
+        this.customerDirection = new ArrayList<>();
+        for(DimensionTarget dt : dimensionTargetList) {
+            String property = 0 == dt.getOperator() ? "include" : "exclude";
+            int dimensionId = dt.getDimensionId();
+            if(3 != dt.getDimensionValueSource()) {
+                // 自定义定向
+                List<Integer> valueIdList;
+                List<String> valueDetailList;
+                valueIdList = DataStringUtils.stringExplodeIntegerList(dt.getDimensionValue(), ',');
+                if(StringUtils.isBlank(dt.getDimensionValueDetails())) {
+                    // 把valueIdList转成valueDetailList, 每个值前面拼接一个 0_ 字符串
+                    valueDetailList = valueIdList.stream().map(valueId -> String.format("0_%d", valueId)).toList();
+                } else {
+                    valueDetailList = DataStringUtils.stringExplodeList(dt.getDimensionValueDetails(), ',');
+                }
+                this.customerDirection.add(new TrafficTarget(dimensionId, property, valueIdList, valueDetailList));
+            }
+        }
+
+        return this.customerDirection;
     }
 
     public Map<String, Direction> getDirection() {
@@ -98,23 +139,75 @@ public class SdkGroupStrategy {
             this.direction.put("sdkVersion", new Direction("", new ArrayList<>()));
         }
 
+        // 地域定向
+        String locationList = this.sdkGroupDirectionOrigin.getLocationList();
+        if(StringUtils.isNotBlank(locationList)) {
+            if(locationList.startsWith("!")) {
+                locationList = locationList.replace("!", StringUtils.EMPTY);
+                this.direction.put("location", new Direction("exclude", DataStringUtils.stringExplodeList(locationList, ",")));
+            } else {
+                this.direction.put("location", new Direction("include", DataStringUtils.stringExplodeList(locationList, ",")));
+            }
+            this.direction.put("location", new Direction("include", DataStringUtils.stringExplodeList(locationList, ",")));
+        } else {
+            this.direction.put("location", new Direction("", new ArrayList<>()));
+        }
+
+        // 制造商定向
+        String makeList = this.sdkGroupDirectionOrigin.getMakeList();
+        if(StringUtils.isNotBlank(makeList)) {
+            if(makeList.startsWith("!")) {
+                makeList = makeList.replace("!", StringUtils.EMPTY);
+                this.direction.put("maker", new Direction("exclude", DataStringUtils.stringExplodeList(makeList, ",")));
+            } else {
+                this.direction.put("maker", new Direction("include", DataStringUtils.stringExplodeList(makeList, ",")));
+            }
+        } else {
+            this.direction.put("maker", new Direction("", new ArrayList<>()));
+        }
+
+        // 操作系统版本定向
+        String osvList = this.sdkGroupDirectionOrigin.getOsvList();
+        if(StringUtils.isNotBlank(osvList)) {
+            if(osvList.startsWith("!")) {
+                osvList = osvList.replace("!", StringUtils.EMPTY);
+                this.direction.put("osv", new Direction("exclude", DataStringUtils.stringExplodeList(osvList, ",")));
+            } else {
+                this.direction.put("osv", new Direction("include", DataStringUtils.stringExplodeList(osvList, ",")));
+            }
+        } else {
+            this.direction.put("osv", new Direction("", new ArrayList<>()));
+        }
+
+        // 新的设备包定向
+        // 没有设备包定向信息的时候，还是要强行塞一个值
+        this.direction.put("devicePackage", new Direction(StringUtils.EMPTY, new ArrayList<>()));
+        for(DimensionTarget dt : dimensionTargetList) {
+            String property = 0 == dt.getOperator() ? "include" : "exclude";
+            if(3 == dt.getDimensionValueSource()) {
+                // 新的设备包定向
+                List<String> packageIdList = DataStringUtils.stringExplodeList(dt.getDimensionValue(), ',');
+                this.direction.put("devicePackage", new Direction(property, packageIdList));
+            }
+        }
+
         return this.direction;
     }
 
     // 清理id信息，这个功能主要用在copy分组的时候，清理掉id信息
     public void clearIdInfo() {
         this.groupTargetId = null;
-//
-//        for(DimensionTarget dt : this.dimensionTargetList) {
-//            dt.setModelId(null);
-//        }
+
+        for(DimensionTarget dt : this.dimensionTargetList) {
+            dt.setModelId(null);
+        }
     }
 
     public void completeDbBean() {
         /*
          * 1. 定向信息转成数据库可写信息
          */
-        this.sdkGroupDirectionOrigin = new SdkGroupDirectionOrigin(StringUtils.EMPTY, StringUtils.EMPTY);
+        this.sdkGroupDirectionOrigin = new SdkGroupDirectionOrigin();
 
         // App版本定向
         String property = this.direction.get("appVersion").getProperty();
@@ -127,7 +220,7 @@ public class SdkGroupStrategy {
         } else if("<=".equals(property)) {
             this.sdkGroupDirectionOrigin.setAppVersion("<=" + StringUtils.join(this.direction.get("appVersion").getValue(), ","));
         } else {
-            this.sdkGroupDirectionOrigin.setAppVersion("");
+            this.sdkGroupDirectionOrigin.setAppVersion(StringUtils.EMPTY);
         }
 
         // SDK版本定向
@@ -141,7 +234,70 @@ public class SdkGroupStrategy {
         } else if("<=".equals(property)) {
             this.sdkGroupDirectionOrigin.setSdkVersion("<=" + StringUtils.join(this.direction.get("sdkVersion").getValue(), ","));
         } else {
-            this.sdkGroupDirectionOrigin.setSdkVersion("");
+            this.sdkGroupDirectionOrigin.setSdkVersion(StringUtils.EMPTY);
+        }
+
+        // 地域定向
+        property = this.direction.get("location").getProperty();
+        if("include".equals(property)) {
+            this.sdkGroupDirectionOrigin.setLocationList(StringUtils.join(this.direction.get("location").getValue(), ","));
+        } else if("exclude".equals(property)) {
+            this.sdkGroupDirectionOrigin.setLocationList("!" + StringUtils.join(this.direction.get("location").getValue(), ","));
+        } else {
+            this.sdkGroupDirectionOrigin.setLocationList(StringUtils.EMPTY);
+        }
+
+        // 制造商定向
+        property = this.direction.get("maker").getProperty();
+        if("include".equals(property)) {
+            this.sdkGroupDirectionOrigin.setMakeList(StringUtils.join(this.direction.get("maker").getValue(), ","));
+        } else if("exclude".equals(property)) {
+            this.sdkGroupDirectionOrigin.setMakeList("!" + StringUtils.join(this.direction.get("maker").getValue(), ","));
+        } else {
+            this.sdkGroupDirectionOrigin.setMakeList(StringUtils.EMPTY);
+        }
+
+        // 操作系统版本定向
+        property = this.direction.get("osv").getProperty();
+        if("include".equals(property)) {
+            this.sdkGroupDirectionOrigin.setOsvList(StringUtils.join(this.direction.get("osv").getValue(), ","));
+        } else if("exclude".equals(property)) {
+            this.sdkGroupDirectionOrigin.setOsvList("!" + StringUtils.join(this.direction.get("osv").getValue(), ","));
+        } else {
+            this.sdkGroupDirectionOrigin.setOsvList(StringUtils.EMPTY);
+        }
+
+        /*
+         * 2. 设备包定向信息转成数据库可写信息
+         */
+        this.dimensionTargetList = new ArrayList<>();
+        // 自定义定向
+        if(CollectionUtils.isNotEmpty(this.customerDirection)) {
+            for(TrafficTarget tt : this.customerDirection) {
+                if(CollectionUtils.isEmpty(tt.getValueIdList())) continue;
+
+                int dimensionId = tt.getDimensionId();
+                String dimensionValue = StringUtils.join(tt.getValueIdList(), ",");
+                String dimensionValueDetails = StringUtils.join(tt.getValueDetailList(), ",");
+                int operator = "include".equals(tt.getProperty()) ? 0 : 1;
+                int dimensionValueSource = 1;
+                DimensionTarget dt = new DimensionTarget(this.groupTargetId, DirectionTypeEnum.SDK_GROUP.getValue(),
+                        operator, dimensionId, dimensionValueSource, dimensionValue, dimensionValueDetails);
+                this.dimensionTargetList.add(dt);
+            }
+        }
+
+        // 设备包定向
+        if(this.direction.containsKey("devicePackage")) {
+            Direction devicePackageDirection = this.direction.get("devicePackage");
+            if(CollectionUtils.isNotEmpty(devicePackageDirection.getValue())) {
+                int dimensionId = -1;
+                int operator = "include".equals(devicePackageDirection.getProperty()) ? 0 : 1;
+                String dimensionValue = StringUtils.join(devicePackageDirection.getValue(), ",");
+                int dimensionValueSource = 3;
+                dimensionTargetList.add(new DimensionTarget(this.groupTargetId, DirectionTypeEnum.SDK_GROUP.getValue(),
+                        operator, dimensionId, dimensionValueSource, dimensionValue, StringUtils.EMPTY));
+            }
         }
     }
 }

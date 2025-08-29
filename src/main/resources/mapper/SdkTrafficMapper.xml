@@ -5,7 +5,7 @@
     <resultMap id = "sdkTrafficMap" type = "com.easyads.management.distribution.traffic.model.SdkTraffic">
         <id property = "id" column = "sdk_group_percentage_id" />
 
-        <association property = "trafficPercentage" javaType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy">
+        <association property = "trafficPercentage" javaType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentage">
             <id property = "percentageId" column = "sdk_group_percentage_id"/>
             <result property = "tag" column = "tag" />
             <result property = "percentage" column = "percentage" />
@@ -49,6 +49,53 @@
                 AND A.sdk_group_percentage_id = #{percentageId}
             </if>
         ORDER BY B.id, C.priority ASC
+    </select>
+
+    <!-- 获取指定某个策略下的流量分发详细信息 -->
+    <select id = "getOneAdspotSdkTargetTrafficDetail" resultMap = "sdkTrafficMap">
+        SELECT
+            B.id AS sdk_group_percentage_id,
+            B.tag AS group_tag,
+            B.percentage AS group_percentage,
+            B.status AS group_percentage_status,
+            C.id AS sdk_group_targeting_id,
+            C.name,
+            C.priority,
+            C.app_version,
+            C.sdk_version,
+            C.location_list,
+            C.make_list,
+            C.osv_list,
+            D.id AS target_id,
+            D.model_id,
+            D.model_type,
+            D.operator,
+            D.dimension_id,
+            D.value_source,
+            D.content,
+            D.dimension_value,
+            D.dimension_value_details,
+            A.id AS sdk_traffic_id,
+            E.id AS sdk_targeting_percentage_id,
+            E.tag AS target_group_tag,
+            E.percentage AS target_group_percentage,
+            E.status AS target_group_percentage_status,
+            A.supplier_ids
+        FROM sdk_group A
+                 JOIN sdk_group_percentage B ON A.sdk_group_percentage_id = B.id
+                 JOIN sdk_group_targeting C ON A.sdk_group_targeting_id = C.id
+                 JOIN sdk_targeting_percentage E ON A.sdk_group_targeting_percentage_id = E.id
+                 LEFT OUTER JOIN
+             (
+                 SELECT *
+                 FROM targeting_item
+                 WHERE model_type = 3
+             ) D ON C.id = D.model_id
+        WHERE
+            A.adspot_id = #{adspotId}
+          AND A.sdk_group_percentage_id = #{percentageId}
+          AND A.sdk_group_targeting_id = #{targetId}
+          AND A.sdk_group_targeting_percentage_id = #{targetPercentageId}
     </select>
 
     <!-- 流量分发设置 -->

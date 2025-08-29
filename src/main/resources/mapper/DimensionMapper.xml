@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyads.component.mapper.DimensionMapper">
+
+    <insert id = "createDimensionTarget" useGeneratedKeys = "true" keyProperty = "dimensionTargetList.id">
+        INSERT INTO targeting_item
+            (dimension_id, model_id, model_type, value_source, operator, dimension_value, dimension_value_details)
+        VALUES
+            <foreach collection = "dimensionTargetList" item = "item" index = "index" separator = "," >
+                (#{item.dimensionId}, #{item.modelId}, #{item.modelType},
+                    #{item.dimensionValueSource}, #{item.operator}, #{item.dimensionValue}, #{item.dimensionValueDetails})
+            </foreach>
+    </insert>
+</mapper>

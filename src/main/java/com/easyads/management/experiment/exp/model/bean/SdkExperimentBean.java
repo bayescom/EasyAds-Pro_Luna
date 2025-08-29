@@ -3,7 +3,7 @@ package com.easyads.management.experiment.exp.model.bean;
 import lombok.Data;
 
 @Data
-public class SdkExperiment {
+public class SdkExperimentBean {
     private Long id;
     private Long adspotId;
     private String adspotName;

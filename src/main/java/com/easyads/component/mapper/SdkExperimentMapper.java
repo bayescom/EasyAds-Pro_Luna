@@ -1,6 +1,6 @@
 package com.easyads.component.mapper;
 
-import com.easyads.management.experiment.exp.model.bean.SdkExperiment;
+import com.easyads.management.experiment.exp.model.bean.SdkExperimentBean;
 import com.easyads.management.experiment.exp.model.bean.SdkExperimentFilterUnit;
 import com.easyads.management.experiment.exp.model.filter.SdkExperimentFilterParams;
 import com.easyads.management.experiment.report.model.bean.SdkExperimentGroup;
@@ -23,9 +23,9 @@ public interface SdkExperimentMapper {
     // 获取测试报表总数
     int getSdkExperimentCount(SdkExperimentFilterParams filterParams);
     // 获取测试报表详细列表
-    List<SdkExperiment> getSdkExperimentList(SdkExperimentFilterParams filterParams);
+    List<SdkExperimentBean> getSdkExperimentList(SdkExperimentFilterParams filterParams);
     // 获得单个测试报表
-    SdkExperiment getOneSdkExperimentByExpId(Long expId);
+    SdkExperimentBean getOneSdkExperimentByExpId(Long expId);
 
     // AB测试报表的接口
     // 获取某个测试的分组信息

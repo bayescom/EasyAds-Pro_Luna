@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.easyads.component.mapper.SdkExperimentMapper">
 
-    <resultMap id = "sdkExperimentMap" type = "com.easyads.management.experiment.exp.model.bean.SdkExperiment">
+    <resultMap id = "sdkExperimentMap" type = "com.easyads.management.experiment.exp.model.bean.SdkExperimentBean">
         <result property = "id" column = "id" />
         <result property = "adspotId" column = "adspot_id" />
         <result property = "adspotName" column = "adspot_name" />

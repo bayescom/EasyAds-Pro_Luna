@@ -10,7 +10,7 @@ import com.easyads.management.adspot.model.Adspot;
 import com.easyads.management.adspot.model.AdspotFilterParams;
 
 import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
-import com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy;
+import com.easyads.management.distribution.strategy.model.percentage.SdkPercentage;
 import com.easyads.management.distribution.traffic.model.SdkTrafficSingle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,7 +68,7 @@ public class AdspotService {
     private void createAdspotSdkTrafficStrategy(long adspotId) {
         // 聚合SDK需要创建流量百分比分组、流量分组信息，默认都是单一的
         // 创建流量百分比策略
-        SdkPercentageStrategy sps = new SdkPercentageStrategy();
+        SdkPercentage sps = new SdkPercentage();
         percentageStrategyMapper.createOnePercentage(sps);
         // 创建流量分组策略
         SdkGroupStrategy sgs = new SdkGroupStrategy();

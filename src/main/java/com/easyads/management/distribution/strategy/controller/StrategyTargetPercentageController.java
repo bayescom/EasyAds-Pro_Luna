@@ -1,34 +1,52 @@
 package com.easyads.management.distribution.strategy.controller;
 
-
 import com.easyads.component.exception.BadRequestException;
 import com.easyads.component.rpc.ResponseCodeUtils;
 import com.easyads.component.utils.JsonUtils;
-import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
-import com.easyads.management.distribution.strategy.service.StrategyGroupService;
+import com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentageExperiment;
+import com.easyads.management.distribution.strategy.service.StrategyTargetPercentageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Slf4j
 @RestController
-@RequestMapping(value="/adspot/sdk/group_strategy")
-// 流量分组管理
-public class StrategyGroupController {
+@RequestMapping(value="/adspot/sdk")
+// AB测试-瀑布流
+public class StrategyTargetPercentageController {
 
     @Autowired
-    private StrategyGroupService adspotSdkGroupService;
+    private StrategyTargetPercentageService adspotSdkTargetPercentageService;
 
-    @GetMapping("/{adspotId}/{percentageId}")
-    public Object getOnePercentageStrategyGroup(@PathVariable Integer adspotId,
-                                                @PathVariable Integer percentageId,
+    @GetMapping("/strategy_direction/{targetId}")
+    public Object getTrafficOneTargetStrategy(@PathVariable Long targetId,
+                                              HttpServletRequest request, HttpServletResponse response) {
+        try {
+            return adspotSdkTargetPercentageService.getOneTargetStrategy(targetId);
+        } catch (BadRequestException e) {
+            response.setStatus(400);
+            request.setAttribute("message", e.getMessage());
+            log.warn("params error req params = {}", request.getParameterMap().toString());
+        } catch (Exception e) {
+            response.setStatus(500);
+            request.setAttribute("message", "服务器内部异常");
+            log.error("error = {}", e);
+        }
+        return ResponseCodeUtils.setResponseErrorCodeWithMessage(response.getStatus(), (String) request.getAttribute("message"));
+    }
+
+    @PutMapping("/traffic_percentage/{adspotId}/{percentageId}/{targetId}")
+    public Object updateTrafficTargetPercentage(@PathVariable Integer adspotId,
+                                                @PathVariable Long percentageId,
+                                                @PathVariable Long targetId,
+                                                @RequestBody String requestBody,
                                                 HttpServletRequest request, HttpServletResponse response) {
+
         try {
-            return adspotSdkGroupService.getOnePercentageGroupStrategy(adspotId, percentageId);
+            SdkTargetPercentageExperiment sdkTargetPercentageExperiment = JsonUtils.convertJsonToObject(requestBody, SdkTargetPercentageExperiment.class);
+            return adspotSdkTargetPercentageService.updateTargetPercentage(adspotId, percentageId, targetId, sdkTargetPercentageExperiment);
         } catch (BadRequestException e) {
             response.setStatus(400);
             request.setAttribute("message", e.getMessage());
@@ -41,23 +59,4 @@ public class StrategyGroupController {
         return ResponseCodeUtils.setResponseErrorCodeWithMessage(response.getStatus(), (String) request.getAttribute("message"));
     }
 
-    @PutMapping("/{adspotId}/{percentageId}")
-    public Object updateOnePercentageStrategyGroup(@PathVariable Integer adspotId,
-                                                   @PathVariable Integer percentageId,
-                                                   @RequestBody String requestBody,
-                                                   HttpServletRequest request, HttpServletResponse response) {
-        try {
-            List<SdkGroupStrategy> sdkGroupStrategyList = JsonUtils.convertJsonNodeToList(JsonUtils.getJsonNode(requestBody).get("groupStrategyList"), SdkGroupStrategy.class);
-            return adspotSdkGroupService.updateOnePercentageGroupStrategy(adspotId, percentageId, sdkGroupStrategyList);
-        } catch (BadRequestException e) {
-            response.setStatus(400);
-            request.setAttribute("message", e.getMessage());
-            log.warn("params error req params = {}", request.getParameterMap().toString());
-        } catch (Exception e) {
-            response.setStatus(500);
-            request.setAttribute("message", "服务器内部异常");
-            log.error("error = {}", e);
-        }
-        return ResponseCodeUtils.setResponseErrorCodeWithMessage(response.getStatus(), (String) request.getAttribute("message"));
-    }
 }

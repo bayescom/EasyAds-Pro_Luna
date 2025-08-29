@@ -1,6 +1,8 @@
 package com.easyads.component.mapper;
 
-import com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy;
+import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
+import com.easyads.management.distribution.strategy.model.percentage.SdkPercentage;
+import com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentage;
 import org.apache.ibatis.annotations.MapKey;
 import org.springframework.stereotype.Component;
 
@@ -12,10 +14,20 @@ import java.util.Set;
 public interface PercentageStrategyMapper {
     // 流量切分相关操作
     @MapKey("percentageId")
-    Map<Integer, SdkPercentageStrategy> getTrafficPercentageMap(Integer adspotId);
-    List<SdkPercentageStrategy> getTrafficPercentageList(Integer adspotId);
-    int createOnePercentage(SdkPercentageStrategy trafficPercentage);
-    int createPercentageList(List<SdkPercentageStrategy> trafficPercentageList);
-    int updatePercentageList(List<SdkPercentageStrategy> trafficPercentageList);
+    Map<Integer, SdkPercentage> getTrafficPercentageMap(Integer adspotId);
+    List<SdkPercentage> getTrafficPercentageList(Integer adspotId);
+    int createOnePercentage(SdkPercentage trafficPercentage);
+    int createPercentage(List<SdkPercentage> trafficPercentageList);
+    int updatePercentage(List<SdkPercentage> trafficPercentageList);
+
+    // 因为流量分组的改动更新流量分发信息
+    int createPercentageTraffic(Integer adspotId, List<SdkPercentage> trafficPercentageList,
+                                List<SdkGroupStrategy> sdkGroupStrategyList,
+                                List<SdkTargetPercentage> sdkTargetPercentageList);
+    int deletePercentageTrafficCascade(Set<Integer> percentageIdList);
+
+    // TODO AB测试 没找到引用
+    int createPercentageList(List<SdkPercentage> trafficPercentageList);
+    int updatePercentageList(List<SdkPercentage> trafficPercentageList);
     int deletePercentageList(Set<Integer> percentageIdList);
 }
