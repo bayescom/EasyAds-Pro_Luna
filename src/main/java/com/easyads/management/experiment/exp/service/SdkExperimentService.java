@@ -23,7 +23,6 @@ public class SdkExperimentService {
 
     public Map<String, Object> getSdkExperimentList(Map<String, Object> queryParams) throws Exception {
         SdkExperimentFilterParams filterParams = new SdkExperimentFilterParams(queryParams);
-        if(filterParams.isInvalid()) throw new BadRequestException("请求参数异常");
         Map<String, Object> sdkExperimentResult = new HashMap(){{
             put("meta", new HashMap(){{
                 put("total", 0);
