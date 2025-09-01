@@ -3,6 +3,7 @@ package com.easyads.management.distribution.traffic.service;
 import com.easyads.component.mapper.SdkChannelMapper;
 import com.easyads.component.mapper.SdkTrafficMapper;
 import com.easyads.component.utils.JsonUtils;
+import com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentageStrategy;
 import com.easyads.management.distribution.traffic.model.SdkChannelSimple;
 import com.easyads.management.distribution.traffic.model.SdkTraffic;
 import com.easyads.management.distribution.traffic.model.SdkTrafficGroup;
@@ -47,41 +48,43 @@ public class AdspotSdkTrafficService {
     private void reOrgSdkChannel(List<SdkTraffic> sdkTrafficList, Map<Integer, SdkChannelSimple> sdkChannelMap) {
         for(SdkTraffic st : sdkTrafficList) {
             for(SdkTrafficGroup stg : st.getTrafficGroupList()) {
-                List<List> biddingGroup = new ArrayList<>();
-                List<List> waterfallGroup = new ArrayList<>();
-                Map<String, List<List>> newSupplierInfo = new LinkedHashMap() {{
-                    put("bidding", biddingGroup);
-                    put("waterfall", waterfallGroup);
-                }} ;
+                for(SdkTargetPercentageStrategy stps : stg.getTargetPercentageStrategyList()) {
+                    List<List> biddingGroup = new ArrayList<>();
+                    List<List> waterfallGroup = new ArrayList<>();
+                    Map<String, List<List>> newSupplierInfo = new LinkedHashMap() {{
+                        put("bidding", biddingGroup);
+                        put("waterfall", waterfallGroup);
+                    }} ;
 
-                // 遍历所有sdk_supplier，将bidding和waterfall分开
-                List<Integer> biddingFloor = new ArrayList<>();
-                for(List oneFloor : stg.getSuppliers()) { // 每一层
-                    List<Integer> waterfallEachFloor = new ArrayList<>();
-                    for(Object supplierId : oneFloor) { // 每一个
-                        SdkChannelSimple ssc = sdkChannelMap.get((Integer)supplierId);
-                        if(null != ssc) {
-                            if(IS_HEAD_BIDDING == ssc.getIsHeadBidding()) {
-                                biddingFloor.add(ssc.getId());
-                            } else {
-                                waterfallEachFloor.add(ssc.getId());
+                    // 遍历所有sdk_supplier，将bidding和waterfall分开
+                    List<Integer> biddingFloor = new ArrayList<>();
+                    for(List oneFloor : stps.getSuppliers()) { // 每一层
+                        List<Integer> waterfallEachFloor = new ArrayList<>();
+                        for(Object supplierId : oneFloor) { // 每一个
+                            SdkChannelSimple ssc = sdkChannelMap.get((Integer)supplierId);
+                            if(null != ssc) {
+                                if(1 == ssc.getIsHeadBidding()) {
+                                    biddingFloor.add(ssc.getId());
+                                } else {
+                                    waterfallEachFloor.add(ssc.getId());
+                                }
                             }
                         }
+                        // 如果这一层有瀑布流的，就加入到瀑布流的List里面
+                        if(CollectionUtils.isNotEmpty(waterfallEachFloor)) {
+                            waterfallGroup.add(waterfallEachFloor);
+                        }
                     }
-                    // 如果这一层有瀑布流的，就加入到瀑布流的List里面
-                    if(CollectionUtils.isNotEmpty(waterfallEachFloor)) {
-                        waterfallGroup.add(waterfallEachFloor);
+
+                    // 添加bidding的List
+                    biddingGroup.add(biddingFloor);
+
+                    // 如果没有瀑布流的，就加入一个空的List
+                    if(CollectionUtils.isEmpty(waterfallGroup)) {
+                        waterfallGroup.add(new ArrayList<>());
                     }
+                    stps.setSdkSuppliers(newSupplierInfo);
                 }
-
-                // 添加bidding的List
-                biddingGroup.add(biddingFloor);
-
-                // 如果没有瀑布流的，就加入一个空的List
-                if(CollectionUtils.isEmpty(waterfallGroup)) {
-                    waterfallGroup.add(new ArrayList<>());
-                }
-                stg.setSdkSuppliers(newSupplierInfo);
             }
         }
     }

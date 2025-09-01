@@ -7,8 +7,7 @@
         <result property = "adspotId" column = "adspot_id" />
         <result property = "adspotName" column = "adspot_name" />
         <result property = "mediaId" column = "media_id" />
-        <result property = "mediaName" column = "chinese_name" />
-        <result property = "mediaIcon" column = "media_icon" />
+        <result property = "mediaName" column = "media_name" />
         <result property = "experimentType" column = "experiment_type" />
         <result property = "experimentName" column = "experiment_name" />
         <result property = "status" column = "status" />
@@ -23,9 +22,9 @@
         FROM
             sdk_experiment A
         LEFT JOIN
-            ssp_adspot B ON A.adspot_id = B.id
+            adspot B ON A.adspot_id = B.id
         LEFT JOIN
-            ssp_media C ON B.media_id = C.id
+            media C ON B.media_id = C.id
         WHERE
             1 = 1
             <if test="mediaIds != null and mediaIds.size() != 0">
@@ -50,15 +49,13 @@
                 AND A.experiment_type = #{expType}
             </if>
             <if test="status != null">
-                <!--      当 status = 2的时候，查的是广告位上的状态         -->
-                <!--  当sdk_experiment 表里面存的是1，表示在测试中的时候，如果此时 B.closed_at 是有值的，那么列表返回的status = 2,是暂停的，就和这里的数据对不上-->
-                <!--  所以要限制一下，只有当 ssp_adspot 里面是开启，的时候，才走 当sdk_experiment 里面的status-->
+                <!-- status的值为: 1（测试中），0（已结束），2（已暂停），其中暂停表示的是广告位关掉了，但是测试没结束-->
                 <choose>
                     <when test="status == 2">
-                        AND B.closed_at IS NOT NULL
+                        AND B.status = 0
                     </when>
                     <otherwise>
-                        AND A.status = #{status} AND B.closed_at IS NULL
+                        AND A.status = #{status} AND B.status = 1
                     </otherwise>
                 </choose>
             </if>
@@ -71,24 +68,23 @@
             A.adspot_id,
             B.adspot_name,
             B.media_id,
-            C.chinese_name,
-            C.media_icon,
+            C.media_name,
             A.experiment_type,
             A.experiment_name,
             <!--   广告位上状态关闭之后，前端显示是 【已暂停】    -->
             CASE
                 WHEN A.end_at IS NOT NULL THEN 0
-                WHEN B.closed_at IS NOT NULL THEN 2
+                WHEN B.status = 0 THEN 2
                 ELSE 1
             END AS status,
             A.created_at,
-            COALESCE(A.end_at, B.closed_at) AS end_at
+            A.end_at
         FROM
             sdk_experiment A
         LEFT JOIN
-            ssp_adspot B ON A.adspot_id = B.id
+            adspot B ON A.adspot_id = B.id
         LEFT JOIN
-            ssp_media C ON B.media_id = C.id
+            media C ON B.media_id = C.id
         WHERE
             1 = 1
             <if test="mediaIds != null and mediaIds.size() != 0">
@@ -113,15 +109,13 @@
                 AND A.experiment_type = #{expType}
             </if>
             <if test="status != null">
-                <!--      当 status = 2的时候，查的是广告位上的状态         -->
-                <!--  当sdk_experiment 表里面存的是1，表示在测试中的时候，如果此时 B.closed_at 是有值的，那么列表返回的status = 2,是暂停的，就和这里的数据对不上-->
-                <!--  所以要限制一下，只有当 ssp_adspot 里面是开启，的时候，才走 当sdk_experiment 里面的status-->
+                <!-- status的值为: 1（测试中），0（已结束），2（已暂停），其中暂停表示的是广告位关掉了，但是测试没结束-->
                 <choose>
                     <when test="status == 2">
-                        AND B.closed_at IS NOT NULL
+                        AND B.status = 0
                     </when>
                     <otherwise>
-                        AND A.status = #{status} AND B.closed_at IS NULL
+                        AND A.status = #{status} AND B.status = 1
                     </otherwise>
                 </choose>
             </if>
@@ -140,24 +134,23 @@
             A.adspot_id,
             B.adspot_name,
             B.media_id,
-            C.chinese_name,
-            C.media_icon,
+            C.media_name,
             A.experiment_type,
             A.experiment_name,
             <!--   广告位上状态关闭之后，前端显示是 【已暂停】    -->
             CASE
                 WHEN A.end_at IS NOT NULL THEN 0
-                WHEN B.closed_at IS NOT NULL THEN 2
+                WHEN B.status = 0 THEN 2
                 ELSE 1
             END AS status,
             A.created_at,
-            COALESCE(A.end_at, B.closed_at) AS end_at
+            A.end_at
         FROM
             sdk_experiment A
         LEFT JOIN
-            ssp_adspot B ON A.adspot_id = B.id
+            adspot B ON A.adspot_id = B.id
         LEFT JOIN
-            ssp_media C ON B.media_id = C.id
+            media C ON B.media_id = C.id
         WHERE
             1 = 1
             <if test="expId != null">
@@ -178,18 +171,17 @@
     <select id = "getSdkExperimentFilterMediaList" resultType="com.easyads.management.report.model.bean.filter.MediaFilterUnit">
         SELECT
             A.id AS value,
-            A.chinese_name AS name,
-            A.media_icon AS url,
+            A.media_name AS name,
             A.platform_type AS platform
         FROM
-            ssp_media A
+            media A
         WHERE
             A.id IN (
                 SELECT DISTINCT C.media_id
                 FROM
                     sdk_experiment B
                 JOIN
-                    ssp_adspot C ON B.adspot_id = C.id
+                    adspot C ON B.adspot_id = C.id
                 WHERE
                     B.adspot_id IS NOT NULL
             )
@@ -203,7 +195,7 @@
             A.adspot_name AS name,
             C.name AS adspotType
         FROM
-            ssp_adspot A
+            adspot A
         LEFT OUTER JOIN
             (
                 SELECT value, name
@@ -216,7 +208,7 @@
                 FROM
                     sdk_experiment B
                 JOIN
-                    ssp_adspot C ON B.adspot_id = C.id  <!-- 添加JOIN以获取media_id -->
+                    adspot C ON B.adspot_id = C.id  <!-- 添加JOIN以获取media_id -->
                 WHERE
                     B.adspot_id IS NOT NULL
                     <if test = "mediaIds != null and mediaIds.size() != 0">
@@ -233,8 +225,7 @@
             id AS groupId,
             tag,
             percentage,
-            CONCAT(percentage, '%') AS percentageString,
-            status
+            CONCAT(percentage, '%') AS percentageString
         FROM
             <choose>
                 <when test="expType == 1">

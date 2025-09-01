@@ -10,6 +10,5 @@ public class SdkExperimentGroup {
     @JsonIgnore
     private Float percentage; // 分组占比
     private String percentageString;
-    private Integer status;
     private SdkExperimentGroupReportData data; // AB测试报表数据
 }

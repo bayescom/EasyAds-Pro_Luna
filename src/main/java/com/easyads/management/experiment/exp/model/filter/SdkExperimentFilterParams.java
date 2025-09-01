@@ -10,7 +10,6 @@ public class SdkExperimentFilterParams {
     private Map<String, Object> queryParams;
 
     // 筛选参数和翻页参数
-    public Long companyId;
     public List<Integer> mediaIds;
     public List<Integer> adspotIds;
     public List<Integer> expIds;
@@ -35,9 +34,5 @@ public class SdkExperimentFilterParams {
         if (limit != null && this.page != null) {
             offset = (page - 1) * limit;
         }
-    }
-
-    public boolean isInvalid() {
-        return null == this.companyId;
     }
 }

@@ -13,7 +13,6 @@ public class SdkExperimentReportFilterParams {
     private Map<String, Object> queryParams;
 
     // 筛选参数和翻页参数
-    private Long companyId;
     private Integer adspotId;
     private Integer expId;
     private Integer expType;

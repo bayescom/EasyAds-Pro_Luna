@@ -40,13 +40,13 @@
                 <include refid="thirdGroupReportDataUnionTableSql"></include>
             </when>
             <otherwise>
-                <include refid="bayesGroupReportDataUnionTableSql"></include>
+                <include refid="easyadsGroupReportDataUnionTableSql"></include>
             </otherwise>
         </choose>
     </sql>
 
     <!-- 自己数据天+小时数据的联合表 -->
-    <sql id="bayesGroupReportDataUnionTableSql">
+    <sql id="easyadsGroupReportDataUnionTableSql">
         (
         <if test="dailyBeginTime != null">
             SELECT
@@ -57,12 +57,11 @@
                 SUM(wins) AS bidWin,
                 SUM(shows) AS imp,
                 SUM(clicks) AS click,
-                SUM(costs) AS income
+                SUM(income) AS income
             FROM
                 exp_report_daily
             WHERE
                 `timestamp` BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
-                AND company_id = #{companyId}
                 AND exp_id = #{expId}
             GROUP BY
                 `timestamp`,
@@ -81,12 +80,11 @@
                 SUM(wins) AS bidWin,
                 SUM(shows) AS imp,
                 SUM(clicks) AS click,
-                SUM(costs) AS income
+                SUM(income) AS income
             FROM
                 exp_report_hourly
             WHERE
                 `timestamp` BETWEEN #{hourlyBeginTime} AND #{hourlyEndTime}
-                AND company_id = #{companyId}
                 AND exp_id = #{expId}
             GROUP BY
                 `timestamp`,
@@ -117,7 +115,6 @@
                     exp_report_daily
                 WHERE
                     `timestamp` BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
-                    AND company_id = #{companyId}
                     AND adspot_id = #{adspotId}
                     AND exp_id = #{expId}
             ) A
@@ -135,7 +132,6 @@
                     channel_detail_report_daily
                 WHERE
                     `timestamp` BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
-                    AND company_id = #{companyId}
                     AND adspot_id = #{adspotId}
                     AND owner_id = 0
             ) B

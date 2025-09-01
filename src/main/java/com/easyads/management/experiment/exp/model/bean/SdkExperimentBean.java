@@ -9,7 +9,6 @@ public class SdkExperimentBean {
     private String adspotName;
     private Long mediaId;
     private String mediaName;
-    private String mediaIcon;
     //  A B实验类型， 1-流量切分， 2 - 策略流量切分
     private Integer experimentType;
     private String experimentName;

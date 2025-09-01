@@ -10,6 +10,7 @@ CREATE TABLE `sdk_group_percentage` (
   `tag` varchar(255) NOT NULL COMMENT '分组标记',
   `percentage` float DEFAULT '100' COMMENT '流量百分比',
   `weight` int(11) DEFAULT '1' COMMENT '权重值',
+  `status` tinyint(4) NOT NULL DEFAULT '1'
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
