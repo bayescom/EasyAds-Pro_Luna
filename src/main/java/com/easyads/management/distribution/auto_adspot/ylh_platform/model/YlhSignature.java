@@ -51,7 +51,6 @@ public class YlhSignature {
     public static String calcToken(long memberId, String secret) {
         // 1. 获取sign
         int timestamp = TimeUtils.getCurrentTimestamp().intValue();
-        System.out.print( "timestamp create ============================" +  timestamp);
         String sign = generateSignature(memberId, secret, timestamp);
         // 2. 获取token  规范：base64('memberId', 'time', 'sign')
         String plain = String.format("%d,%s,%s", memberId, timestamp, sign);

@@ -118,14 +118,11 @@ public class YlhAutoAdspotService {
         String secret = sdkChannel.getReportApiParam().getChannelParams().get("secret");
 
         String token = YlhSignature.calcToken(memberId, secret);
-        System.out.print( "token create ============================" +  token);
 
         String bodyString = getRequestBodyString(requestBody, sdkChannel, adspotType);
-        System.out.print( "bodyString create ============================" +  bodyString);
         String responseJson = send_request(CONST.YLH_URL_ADD, bodyString, token);
 
         JsonNode response = JsonUtils.getJsonNode(responseJson);
-        System.out.print( "response create ============================" +  response);
         int code = response.path("code").asInt();
 
         if (code != 0) {
@@ -195,12 +192,10 @@ public class YlhAutoAdspotService {
                 ylhEcpmUpdate.setPlacementId(placementId);
 
                 String bodyString = CsjJsonUtils.toJson(ylhEcpmUpdate);
-                System.out.print( "bodyString update ============================" +  bodyString);
                 String token = YlhSignature.calcToken(memberId, secret);
                 String responseJson = send_request(CONST.YLH_URL_UPDATE, bodyString, token);
 
                 JsonNode response = JsonUtils.getJsonNode(responseJson);
-                System.out.print( "response update ============================" +  response);
                 int responseCode = response.path("code").asInt();
 
                 if (responseCode != 0) {
