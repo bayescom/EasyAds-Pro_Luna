@@ -1,5 +1,6 @@
 package com.easyads.management.distribution.sdk.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.easyads.component.CONST;
 import com.easyads.component.exception.AutoAdspotException;
 import com.easyads.component.utils.CsjJsonUtils;
@@ -79,7 +80,8 @@ public class CsjAutoAdspotService {
                     csjBannerCreate.setAdSlotType(adspotType);
                     csjBannerCreate.setAppId(appId);
 
-                    csjBannerCreate.setAdSlotSizeType(csjBannerCreate.getAdSlotType());
+                    csjBannerCreate.calWidth();
+                    csjBannerCreate.calHeight();
                     bodyString = CsjJsonUtils.toJson(csjBannerCreate);
                     break;
 
@@ -264,7 +266,7 @@ public class CsjAutoAdspotService {
                     csjBannerCreate.setAdSlotName(adSlotName);
                 }
 
-                sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjBannerCreate));
+                sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjBannerCreate));
 
                 break;
             case CONST.EASYADS_SPLASH:
@@ -274,7 +276,7 @@ public class CsjAutoAdspotService {
                     String adSlotName = getOneCsjAdSlotName(sdkChannel);
                     csjSplashCreate.setAdSlotName(adSlotName);
                 }
-                sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjSplashCreate));
+                sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjSplashCreate));
 
                 break;
             case CONST.EASYADS_INTERSTITIAL:
@@ -284,7 +286,7 @@ public class CsjAutoAdspotService {
                     String adSlotName = getOneCsjAdSlotName(sdkChannel);
                     csjInterstitialCreate.setAdSlotName(adSlotName);
                 }
-                sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjInterstitialCreate));
+                sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjInterstitialCreate));
 
                 break;
             case CONST.EASYADS_FEED:
@@ -294,7 +296,7 @@ public class CsjAutoAdspotService {
                     String adSlotName = getOneCsjAdSlotName(sdkChannel);
                     csjFeedCreate.setAdSlotName(adSlotName);
                 }
-                sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjFeedCreate));
+                sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjFeedCreate));
 
                 break;
             case CONST.EASYADS_INCENTIVE:
@@ -304,7 +306,7 @@ public class CsjAutoAdspotService {
                     String adSlotName = getOneCsjAdSlotName(sdkChannel);
                     csjIncentiveCreate.setAdSlotName(adSlotName);
                 }
-                sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjIncentiveCreate));
+                sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjIncentiveCreate));
                 break;
         }
     }
@@ -359,7 +361,7 @@ public class CsjAutoAdspotService {
                         sdkChannel.setCpmUpdateTime(TimeUtils.getCurrentTimestamp());
                     }
                     csjBannerCreate.setCpm(csjCpmUpdate.getCpm());
-                    sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjBannerCreate));
+                    sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjBannerCreate));
 
                     break;
                 case CONST.EASYADS_SPLASH:
@@ -368,7 +370,7 @@ public class CsjAutoAdspotService {
                         sdkChannel.setCpmUpdateTime(TimeUtils.getCurrentTimestamp());
                     }
                     csjSplashCreate.setCpm(csjCpmUpdate.getCpm());
-                    sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjSplashCreate));
+                    sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjSplashCreate));
 
                     break;
                 case CONST.EASYADS_INTERSTITIAL:
@@ -377,7 +379,7 @@ public class CsjAutoAdspotService {
                         sdkChannel.setCpmUpdateTime(TimeUtils.getCurrentTimestamp());
                     }
                     csjInterstitialCreate.setCpm(csjCpmUpdate.getCpm());
-                    sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjInterstitialCreate));
+                    sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjInterstitialCreate));
 
                     break;
                 case CONST.EASYADS_FEED:
@@ -386,7 +388,7 @@ public class CsjAutoAdspotService {
                         sdkChannel.setCpmUpdateTime(TimeUtils.getCurrentTimestamp());
                     }
                     csjFeedCreate.setCpm(csjCpmUpdate.getCpm());
-                    sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjFeedCreate));
+                    sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjFeedCreate));
 
                     break;
                 case CONST.EASYADS_INCENTIVE:
@@ -395,7 +397,7 @@ public class CsjAutoAdspotService {
                         sdkChannel.setCpmUpdateTime(TimeUtils.getCurrentTimestamp());
                     }
                     csjIncentiveCreate.setCpm(csjCpmUpdate.getCpm());
-                    sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(csjIncentiveCreate));
+                    sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(csjIncentiveCreate));
 
                     break;
             }

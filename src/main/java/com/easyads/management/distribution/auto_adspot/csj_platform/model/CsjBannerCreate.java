@@ -24,14 +24,11 @@ public class CsjBannerCreate extends CsjCreateBase {
     private Integer width;
     private Integer height;
 
-    // 设置adSlotSizeType时自动计算width和height
-    public void setAdSlotSizeType(Integer adSlotSizeType) {
-        this.adSlotSizeType = adSlotSizeType;
-        if (adSlotSizeType != null) {
-            CsjBannerAdSlotSizeTypeEnum size = CsjBannerAdSlotSizeTypeEnum.fromType(adSlotSizeType);
-            this.width = size.getWidth();
-            this.height = size.getHeight();
-        }
+    public void calWidth() {
+        this.width =  CsjBannerAdSlotSizeTypeEnum.fromType(adSlotSizeType).getWidth();
     }
 
+    public void calHeight() {
+        this.height =  CsjBannerAdSlotSizeTypeEnum.fromType(adSlotSizeType).getHeight();
+    }
 }

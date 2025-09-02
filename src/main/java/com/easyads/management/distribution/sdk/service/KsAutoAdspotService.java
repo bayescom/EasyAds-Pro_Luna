@@ -107,7 +107,7 @@ public class KsAutoAdspotService {
                 return modifiedAdspot;
             } else {
                 // 每次get的时候，都拿到最新的广告源，塞到数据库中，用来进行更新的时候对cpm的对比
-                sdkChannel.setSupplierAdspotConfig(JsonUtils.toJsonString(firstAdspot));
+                sdkChannel.setSupplierAdspotConfig(JSONObject.toJSONString(firstAdspot));
                 sdkChannelMapper.updateOneAdspotSdkChannelSupplierAdspotConfig(adspotId, sdkChannelId, sdkChannel);
                 return response.path("data").get(0);
             }

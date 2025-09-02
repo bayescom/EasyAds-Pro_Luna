@@ -19,9 +19,8 @@ public class BdCreateBase extends BdBase {
     public String adName;
 
     // 竞价模式 1 - 固价 2 - 实时竞价
-    // 这个地方需要跟 广告源保持一致，
     @JSONField(name = "price_type", alternateNames = {"priceType"})
-    public Integer priceType = 1;
+    public Integer priceType;
 
     // cpm
     public Double cpm;
