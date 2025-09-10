@@ -47,6 +47,7 @@
             <result property = "params" column = "report_api_params" />
             <result property = "status" column = "report_api_params_status" />
             <result property = "autoCreateStatus" column = "report_api_auto_create_status" />
+            <result property = "usedCount" column = "used_count" />
         </collection>
     </resultMap>
 
@@ -64,7 +65,8 @@
             B.account_name AS report_api_account_name,
             B.params AS report_api_params,
             B.status AS report_api_params_status,
-            COALESCE(B.auto_create_status, 0) AS report_api_auto_create_status
+            COALESCE(B.auto_create_status, 0) AS report_api_auto_create_status,
+            COALESCE(H.used_count, 0) AS used_count
         FROM
         (
             SELECT
@@ -116,6 +118,18 @@
             WHERE status = 1 AND mark_deleted = 0
             GROUP BY 1
         ) C ON A.id = C.adn_id
+        LEFT OUTER JOIN
+        (
+            SELECT
+                report_api_id,
+                COUNT(*) AS used_count
+            FROM
+                adspot_sdk_channel
+            WHERE
+                mark_delete = 0
+            GROUP BY
+                report_api_id
+        ) H ON B.id = H.report_api_id
         ORDER BY A.status DESC, A.id ASC
     </select>
 
@@ -132,7 +146,8 @@
             B.account_name AS report_api_account_name,
             B.params AS report_api_params,
             B.status AS report_api_params_status,
-            COALESCE(B.auto_create_status, 0) AS report_api_auto_create_status
+            COALESCE(B.auto_create_status, 0) AS report_api_auto_create_status,
+            COALESCE(M.used_count, 0) AS used_count
         FROM sdk_adn A
         LEFT OUTER JOIN
         (
@@ -147,6 +162,18 @@
             WHERE status = 1 AND mark_deleted = 0
             GROUP BY 1
         ) C ON A.id = C.adn_id
+        LEFT OUTER JOIN
+        (
+            SELECT
+                report_api_id,
+                COUNT(*) AS used_count
+            FROM
+                adspot_sdk_channel
+            WHERE
+                mark_delete = 0
+            GROUP BY
+                report_api_id
+        ) M ON B.id = M.report_api_id
         WHERE A.id = #{sdkAdnId}
     </select>
 

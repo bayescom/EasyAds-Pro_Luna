@@ -18,6 +18,7 @@ public class SdkAdnReportApi {
     protected int status;
     //  自动创建广告位功能状态
     protected int autoCreateStatus;
+    protected Integer usedCount;
 
     public Map<String, String> getChannelParams() {
         if(StringUtils.isNotBlank(this.params)) {
