@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 public class TimeUtils {
@@ -43,6 +44,10 @@ public class TimeUtils {
     public static Long getCurrentDayTimestamp() {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(shanghai_timezone));
         return getTimestamp(sdf_date.format(calendar.getTime()));
+    }
+
+    public static Long getCurrentTimestamp() {
+        return ZonedDateTime.now(shanghai_timezone).toEpochSecond();
     }
 
     public static Long getPreviousDayTimestamp(int previous) {

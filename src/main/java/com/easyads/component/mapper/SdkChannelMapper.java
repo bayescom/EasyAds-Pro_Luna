@@ -25,6 +25,7 @@ public interface SdkChannelMapper {
     SdkChannel getOneAdspotSdkChannel(Long adspotId, Integer sdkChannelId);
     int createOneAdspotSdkChannel(Long adspotId, SdkChannel sdkChannel);
     int updateOneAdspotSdkChannel(Long adspotId, Integer sdkChannelId, SdkChannel sdkChannel);
+    int updateOneAdspotSdkChannelSupplierAdspotConfig(Long adspotId, Integer sdkChannelId, SdkChannel sdkChannel);
     int deleteOneAdspotSdkChannel(Long adspotId, Integer sdkChannelId);
 
     // 获取指定广告位及SDK渠道下，获取常用的meta参数信息
