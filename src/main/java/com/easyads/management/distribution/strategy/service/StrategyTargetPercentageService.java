@@ -28,7 +28,7 @@ public class StrategyTargetPercentageService {
     private PercentageStrategyMapper percentageStrategyMapper;
 
     @Autowired
-    private TargetPercentageStrategyMapper sdkChannelPropertyMapper;
+    private TargetPercentageStrategyMapper targetPercentageStrategyMapper;
 
     @Autowired
     private SdkTrafficMapper sdkChannelTrafficMapper;
@@ -36,7 +36,6 @@ public class StrategyTargetPercentageService {
     @Autowired
     private SdkChannelExperimentMapper sdkChannelExperimentMapper;
 
-    // TODO AB测试 SdkGroupStrategySummary这个类的构造函数依赖的utils，定向的名称映射map没有对应的表
     public Map<String, Object> getOneTargetStrategy(Long targetId) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
 
@@ -83,7 +82,7 @@ public class StrategyTargetPercentageService {
         sdkChannelExperimentMapper.updateSdkExperiment(sdkExperiment);
 
         // 获取已有的定向下的流量分组信息
-        Map<Long, SdkTargetPercentage> existSdkTargetPercentageMap = sdkChannelPropertyMapper.getTargetPercentageMap(adspotId, percentageId, targetId);
+        Map<Long, SdkTargetPercentage> existSdkTargetPercentageMap = targetPercentageStrategyMapper.getTargetPercentageMap(adspotId, percentageId, targetId);
 
         // 区分新增，更新，删除的流量分组信息
         // 新增分为两个组，一个是不复制分发策略进行默认构建，一个是指定copy某个流量分组的分发策略
@@ -106,29 +105,29 @@ public class StrategyTargetPercentageService {
 
         // 删除没有的分组信息
         if(MapUtils.isNotEmpty(existSdkTargetPercentageMap)) {
-            sdkChannelPropertyMapper.deleteTargetPercentageTrafficCascade(percentageId, targetId, existSdkTargetPercentageMap.keySet());
+            targetPercentageStrategyMapper.deleteTargetPercentageTrafficCascade(percentageId, targetId, existSdkTargetPercentageMap.keySet());
         }
 
         // 添加新的分组信息
         // 添加默认策略的分组
         if(CollectionUtils.isNotEmpty(addDefaultSdkTargetPercentageList)) {
-            sdkChannelPropertyMapper.createTargetPercentage(addDefaultSdkTargetPercentageList);
-            sdkChannelPropertyMapper.createTargetPercentageTraffic(adspotId, percentageId, targetId, addDefaultSdkTargetPercentageList);
+            targetPercentageStrategyMapper.createTargetPercentage(addDefaultSdkTargetPercentageList);
+            targetPercentageStrategyMapper.createTargetPercentageTraffic(adspotId, percentageId, targetId, addDefaultSdkTargetPercentageList);
         }
 
         // 添加copy策略的分组
         if(CollectionUtils.isNotEmpty(addCopySdkTargetPercentageList)) {
-            sdkChannelPropertyMapper.createTargetPercentage(addCopySdkTargetPercentageList);
+            targetPercentageStrategyMapper.createTargetPercentage(addCopySdkTargetPercentageList);
 
             Long copyTargetPercentageId = addCopySdkTargetPercentageList.get(0).getCopyTargetPercentageId();
             SdkTraffic sdkTargetTrafficList = sdkChannelTrafficMapper.getOneAdspotSdkTargetTrafficDetail(adspotId, percentageId, targetId, copyTargetPercentageId);
             String copySupplierTraffic = sdkTargetTrafficList.getTrafficGroupList().get(0).getTargetPercentageStrategyList().get(0).getSupplier_ids();
-            sdkChannelPropertyMapper.createTargetPercentageTrafficWithSupplier(adspotId, percentageId, targetId, addCopySdkTargetPercentageList, copySupplierTraffic);
+            targetPercentageStrategyMapper.createTargetPercentageTrafficWithSupplier(adspotId, percentageId, targetId, addCopySdkTargetPercentageList, copySupplierTraffic);
         }
 
         // 更新分组信息
         if(CollectionUtils.isNotEmpty(updateSdkTargetPercentageList)) {
-            sdkChannelPropertyMapper.updateTargetPercentage(updateSdkTargetPercentageList);
+            targetPercentageStrategyMapper.updateTargetPercentage(updateSdkTargetPercentageList);
         }
 
         // 返回更新后的定向策略信息

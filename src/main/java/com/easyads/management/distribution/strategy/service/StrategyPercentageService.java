@@ -26,7 +26,7 @@ public class StrategyPercentageService {
     private GroupStrategyMapper groupStrategyMapper;
 
     @Autowired
-    private PercentageStrategyMapper sdkChannelPropertyMapper;
+    private PercentageStrategyMapper percentageStrategyMapper;
 
     @Autowired
     private TargetPercentageStrategyMapper targetPercentageStrategyMapper;
@@ -40,7 +40,7 @@ public class StrategyPercentageService {
     public Map<String, Object> getOneTrafficPercentageList(Integer adspotId) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
 
-        List<SdkPercentage> trafficPercentageList = sdkChannelPropertyMapper.getTrafficPercentageList(adspotId);
+        List<SdkPercentage> trafficPercentageList = percentageStrategyMapper.getTrafficPercentageList(adspotId);
         resultMap.put("trafficPercentageList", trafficPercentageList);
 
         return resultMap;
@@ -83,7 +83,7 @@ public class StrategyPercentageService {
         sdkChannelExperimentMapper.updateSdkExperiment(sdkExperiment);
 
         // 获取已有的流量分组信息
-        Map<Integer, SdkPercentage> existSdkTrafficPercentageMap = sdkChannelPropertyMapper.getTrafficPercentageMap(adspotId);
+        Map<Integer, SdkPercentage> existSdkTrafficPercentageMap = percentageStrategyMapper.getTrafficPercentageMap(adspotId);
 
         // 区分新增，更新，删除的流量分组信息
         // 新增分为两个组，一个是不复制分发策略进行默认构建，一个是指定copy某个流量分组的分发策略
@@ -108,24 +108,24 @@ public class StrategyPercentageService {
 
         // 删除没有的分组信息
         if(MapUtils.isNotEmpty(existSdkTrafficPercentageMap)) {
-            sdkChannelPropertyMapper.deletePercentageTrafficCascade(existSdkTrafficPercentageMap.keySet());
+            percentageStrategyMapper.deletePercentageTrafficCascade(existSdkTrafficPercentageMap.keySet());
         }
 
         // 添加新的分组信息
         // 添加默认策略的分组
         if(CollectionUtils.isNotEmpty(addDefaultSdkTrafficPercentageList)) {
-            sdkChannelPropertyMapper.createPercentage(addDefaultSdkTrafficPercentageList);
+            percentageStrategyMapper.createPercentageList(addDefaultSdkTrafficPercentageList);
             List<SdkGroupStrategy> defaultSdkGroupStrategyList = Collections.nCopies(addDefaultSdkTrafficPercentageList.size(), new SdkGroupStrategy());
-            groupStrategyMapper.createGroupStrategy(defaultSdkGroupStrategyList);
+            groupStrategyMapper.createGroupStrategyList(defaultSdkGroupStrategyList);
             // 创建流量分发策略下的分组信息，默认只有一个组
             List<SdkTargetPercentage> sdkTargetPercentageList = defaultSdkGroupStrategyList.stream()
                     .map(sgs -> new SdkTargetPercentage()).collect(Collectors.toList());
             targetPercentageStrategyMapper.createTargetPercentage(sdkTargetPercentageList);
-            sdkChannelTrafficMapper.createPercentageTraffic(adspotId, addDefaultSdkTrafficPercentageList, defaultSdkGroupStrategyList, sdkTargetPercentageList);
+            percentageStrategyMapper.createPercentageTraffic(adspotId, addDefaultSdkTrafficPercentageList, defaultSdkGroupStrategyList, sdkTargetPercentageList);
         }
         // 添加copy策略的分组
         if(CollectionUtils.isNotEmpty(addCopySdkTrafficPercentageList)) {
-            sdkChannelPropertyMapper.createPercentage(addCopySdkTrafficPercentageList);
+            percentageStrategyMapper.createPercentageList(addCopySdkTrafficPercentageList);
             for(SdkPercentage stp : addCopySdkTrafficPercentageList) {
                 List<SdkTraffic> sdkTrafficList = sdkChannelTrafficMapper.getOneAdspotSdkTrafficDetail(adspotId, stp.getCopyPercentageId());
                 SdkTraffic onePercentageSdkTraffic = sdkTrafficList.get(0);
@@ -138,23 +138,23 @@ public class StrategyPercentageService {
                     supplierTraffic.add(stg.getTargetPercentageStrategyList().get(0).getSupplier_ids());
                 }
 
-                groupStrategyMapper.createGroupStrategy(sdkGroupStrategyList);
+                groupStrategyMapper.createGroupStrategyList(sdkGroupStrategyList);
                 // 创建流量分发策略下的分组信息，默认只有一个组
                 List<SdkTargetPercentage> sdkTargetPercentageList = sdkGroupStrategyList.stream()
                         .map(sgs -> new SdkTargetPercentage()).collect(Collectors.toList());
                 targetPercentageStrategyMapper.createTargetPercentage(sdkTargetPercentageList);
-                targetPercentageStrategyMapper.createGroupStrategyTrafficWithSupplier(adspotId, stp.getPercentageId(), sdkGroupStrategyList, sdkTargetPercentageList, supplierTraffic);
+                sdkChannelTrafficMapper.createGroupStrategyTrafficWithSupplier(adspotId, stp.getPercentageId(), sdkGroupStrategyList, sdkTargetPercentageList, supplierTraffic);
             }
 
         }
 
         // 更新分组信息
         if(CollectionUtils.isNotEmpty(updateSdkTrafficPercentageList)) {
-            sdkChannelPropertyMapper.updatePercentage(updateSdkTrafficPercentageList);
+            percentageStrategyMapper.updatePercentageList(updateSdkTrafficPercentageList);
         }
 
         // 返回更新后的定向策略信息
-        resultMap.put("trafficPercentageList", sdkChannelPropertyMapper.getTrafficPercentageList(adspotId));
+        resultMap.put("trafficPercentageList", percentageStrategyMapper.getTrafficPercentageList(adspotId));
 
         return resultMap;
     }

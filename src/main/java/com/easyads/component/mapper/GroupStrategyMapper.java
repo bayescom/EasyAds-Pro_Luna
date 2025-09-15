@@ -16,13 +16,8 @@ public interface GroupStrategyMapper {
     Map<Long, SdkGroupStrategy> getAllGroupStrategyMap(Integer adspotId, Integer percentageId);
     List<SdkGroupStrategy> getAllGroupStrategyList(Integer adspotId, Integer percentageId);
     int createOneGroupStrategy(SdkGroupStrategy sdkGroupStrategy);
-    int createGroupStrategy(List<SdkGroupStrategy> sdkGroupStrategyList);
-    int updateGroupStrategy(List<SdkGroupStrategy> sdkGroupStrategyList);
-    int deleteGroupStrategy(Set<Long> groupTargetIdList);
-    SdkGroupStrategySummary getOneTargetStrategy(Long groupTargetId);
-
-    // TODO AB测试 没找到引用
     int createGroupStrategyList(List<SdkGroupStrategy> sdkGroupStrategyList);
     int updateGroupStrategyList(List<SdkGroupStrategy> sdkGroupStrategyList);
     int deleteGroupStrategyList(Set<Long> groupTargetIdList);
+    SdkGroupStrategySummary getOneTargetStrategy(Long groupTargetId);
 }

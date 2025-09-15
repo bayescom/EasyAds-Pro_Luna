@@ -6,9 +6,11 @@ import com.easyads.management.distribution.strategy.model.target_percentage.SdkT
 import com.easyads.management.distribution.traffic.model.SdkTrafficSingle;
 import com.easyads.management.distribution.traffic.model.SdkTraffic;
 import com.easyads.management.distribution.traffic.model.SdkTrafficGroupSimple;
+import org.apache.ibatis.annotations.MapKey;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -26,12 +28,6 @@ public interface SdkTrafficMapper {
     int updateOneAdspotAllTraffic(List<SdkTrafficGroupSimple> sdkTrafficList);
     // 获取广告位上的SDK分发的简易信息
     List<SdkTrafficGroupSimple> getOneAdspotSdkTrafficSimple(Long adspotId, Integer sdkChannelId);
-
-    // 因为流量分组的改动更新流量分发信息
-    int createPercentageTraffic(Integer adspotId, List<SdkPercentage> trafficPercentageList,
-                                List<SdkGroupStrategy> sdkGroupStrategyList,
-                                List<SdkTargetPercentage> sdkTargetPercentageList);
-    int deletePercentageTraffic(Set<Integer> percentageIdList);
 
     // 因为分发策略的改动更新流量分发信息
     int createOnePercentageGroupStrategyTraffic(SdkTrafficSingle sdkTraffic);

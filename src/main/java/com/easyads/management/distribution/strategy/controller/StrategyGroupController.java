@@ -1,6 +1,5 @@
 package com.easyads.management.distribution.strategy.controller;
 
-
 import com.easyads.component.exception.BadRequestException;
 import com.easyads.component.rpc.ResponseCodeUtils;
 import com.easyads.component.utils.JsonUtils;

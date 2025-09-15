@@ -176,26 +176,6 @@
         WHERE adspot_id = #{adspotId} AND supplier_ids rlike #{sdkChannelId}
     </select>
 
-
-    <!-- 流量切分更新导致分发设置更新 -->
-    <insert id = "createPercentageTraffic">
-        INSERT INTO sdk_group
-        (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id)
-        VALUES
-        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
-            (#{adspotId}, #{item.percentageId}, #{sdkGroupStrategyList[${index}].groupTargetId})
-        </foreach>
-    </insert>
-
-    <delete id = "deletePercentageTraffic">
-        DELETE FROM sdk_group
-        WHERE
-            sdk_group_percentage_id IN
-            <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
-                #{item}
-            </foreach>
-    </delete>
-
     <!-- 分组策略更新导致分发设置更新 -->
     <insert id = "createOnePercentageGroupStrategyTraffic" useGeneratedKeys = "true" keyProperty = "id"
             parameterType = "com.easyads.management.distribution.traffic.model.SdkTrafficSingle">

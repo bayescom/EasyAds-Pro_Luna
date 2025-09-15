@@ -43,43 +43,6 @@
         </foreach>
     </update>
 
-    <!-- 分组策略更新导致分发设置更新 -->
-    <insert id = "createOnePercentageGroupStrategyTraffic" useGeneratedKeys = "true" keyProperty = "id"
-        parameterType = "com.easyads.management.distribution.traffic.model.SdkTrafficSingle">
-        INSERT INTO sdk_group
-            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
-        VALUES (#{adspotId}, #{percentageId}, #{groupTargetId}, #{targetPercentageId})
-    </insert>
-
-    <insert id = "createGroupStrategyTraffic">
-        INSERT INTO sdk_group
-            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
-        VALUES
-            <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
-                (#{adspotId}, #{percentageId}, #{item.groupTargetId}, #{sdkTargetPercentageList[${index}].targetPercentageId})
-            </foreach>
-    </insert>
-
-    <insert id = "createGroupStrategyTrafficWithSupplier">
-        INSERT INTO sdk_group
-            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id,
-                sdk_group_targeting_percentage_id, supplier_ids)
-        VALUES
-            <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
-                (#{adspotId}, #{percentageId}, #{item.groupTargetId},
-                    #{sdkTargetPercentageList[${index}].targetPercentageId}, #{supplierTraffic[${index}]})
-            </foreach>
-    </insert>
-
-    <delete id = "deleteGroupStrategyTraffic">
-        DELETE FROM sdk_group
-        WHERE
-            sdk_group_targeting_id IN
-            <foreach collection = "groupTargetIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
-                #{item}
-            </foreach>
-    </delete>
-
     <!-- 分发策略的分组改动更新流量分发信息 -->
     <insert id = "createTargetPercentageTraffic">
         INSERT INTO sdk_group

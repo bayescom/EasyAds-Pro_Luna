@@ -194,8 +194,7 @@
             A.id AS value,
             A.adspot_name AS name,
             C.name AS adspotType
-        FROM
-            adspot A
+        FROM adspot A
         LEFT OUTER JOIN
         (
             SELECT value, name

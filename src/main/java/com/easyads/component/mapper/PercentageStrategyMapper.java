@@ -17,17 +17,12 @@ public interface PercentageStrategyMapper {
     Map<Integer, SdkPercentage> getTrafficPercentageMap(Integer adspotId);
     List<SdkPercentage> getTrafficPercentageList(Integer adspotId);
     int createOnePercentage(SdkPercentage trafficPercentage);
-    int createPercentage(List<SdkPercentage> trafficPercentageList);
-    int updatePercentage(List<SdkPercentage> trafficPercentageList);
+    int createPercentageList(List<SdkPercentage> trafficPercentageList);
+    int updatePercentageList(List<SdkPercentage> trafficPercentageList);
 
     // 因为流量分组的改动更新流量分发信息
     int createPercentageTraffic(Integer adspotId, List<SdkPercentage> trafficPercentageList,
                                 List<SdkGroupStrategy> sdkGroupStrategyList,
                                 List<SdkTargetPercentage> sdkTargetPercentageList);
     int deletePercentageTrafficCascade(Set<Integer> percentageIdList);
-
-    // TODO AB测试 没找到引用
-    int createPercentageList(List<SdkPercentage> trafficPercentageList);
-    int updatePercentageList(List<SdkPercentage> trafficPercentageList);
-    int deletePercentageList(Set<Integer> percentageIdList);
 }

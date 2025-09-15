@@ -40,16 +40,16 @@
             (#{tag}, #{percentage})
     </insert>
 
-    <insert id = "createPercentage" useGeneratedKeys = "true" keyProperty = "trafficPercentageList.percentageId">
+    <insert id = "createPercentageList" useGeneratedKeys = "true" keyProperty = "trafficPercentageList.percentageId">
         INSERT INTO sdk_group_percentage
-        (exp_id, tag, percentage, status)
+            (exp_id, tag, percentage, status)
         VALUES
         <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
             (#{item.expId}, #{item.tag}, #{item.percentage}, #{item.status})
         </foreach>
     </insert>
 
-    <update id = "updatePercentage">
+    <update id = "updatePercentageList">
         <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ";">
             UPDATE sdk_group_percentage
             SET exp_id = #{item.expId}, tag = #{item.tag}, percentage = #{item.percentage}, status = #{item.status}
@@ -109,31 +109,5 @@
         <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
             #{item}
         </foreach>
-    </delete>
-
-    <insert id = "createPercentageList" useGeneratedKeys = "true" keyProperty = "trafficPercentageList.percentageId">
-        INSERT INTO sdk_group_percentage
-            (tag, percentage)
-        VALUES
-        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
-            (#{item.tag}, #{item.percentage})
-        </foreach>
-    </insert>
-
-    <update id = "updatePercentageList">
-        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ";">
-            UPDATE sdk_group_percentage
-            SET tag = #{item.tag}, percentage = #{item.percentage}
-            WHERE id = #{item.percentageId}
-        </foreach>
-    </update>
-
-    <delete id = "deletePercentageList">
-        DELETE FROM sdk_group_percentage
-        WHERE
-            id IN
-            <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
-                #{item}
-            </foreach>
     </delete>
 </mapper>

@@ -2,7 +2,9 @@ package com.easyads.management.distribution.strategy.service;
 
 import com.easyads.component.mapper.GroupStrategyMapper;
 import com.easyads.component.mapper.SdkTrafficMapper;
+import com.easyads.component.mapper.TargetPercentageStrategyMapper;
 import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
+import com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentage;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +15,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class StrategyGroupService {
 
     @Autowired
     private GroupStrategyMapper groupStrategyMapper;
+
+    @Autowired
+    private TargetPercentageStrategyMapper targetPercentageStrategyMapper;
 
     @Autowired
     private SdkTrafficMapper sdkTrafficMapper;
@@ -65,6 +71,10 @@ public class StrategyGroupService {
         // 对新增的group_strategy进行插入
         if(CollectionUtils.isNotEmpty(addSdkGroupStrategyList)) {
             groupStrategyMapper.createGroupStrategyList(addSdkGroupStrategyList);
+            // 创建流量分发策略下的分组信息，默认只有一个组
+            List<SdkTargetPercentage> sdkTargetPercentageList = addSdkGroupStrategyList.stream()
+                    .map(sgs -> new SdkTargetPercentage()).collect(Collectors.toList());
+            targetPercentageStrategyMapper.createTargetPercentage(sdkTargetPercentageList);
             sdkTrafficMapper.createGroupStrategyTraffic(adspotId, percentageId, addSdkGroupStrategyList);
         }
 
