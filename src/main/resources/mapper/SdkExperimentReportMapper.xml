@@ -133,7 +133,6 @@
                 WHERE
                     `timestamp` BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
                     AND adspot_id = #{adspotId}
-                    AND owner_id = 0
             ) B
             ON A.`timestamp` = B.`timestamp`
             AND A.channel_id = B.channel_id
