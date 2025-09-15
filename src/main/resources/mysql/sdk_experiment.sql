@@ -8,4 +8,4 @@ CREATE TABLE `sdk_experiment` (
     `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态',
     PRIMARY KEY (`id`),
     KEY `searchIndex` (`adspot_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=170 DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8

@@ -5,4 +5,4 @@ CREATE TABLE `sdk_targeting_percentage` (
     `percentage` float DEFAULT '100',
     `status` tinyint(4) NOT NULL DEFAULT '1',
     PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9748 DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
