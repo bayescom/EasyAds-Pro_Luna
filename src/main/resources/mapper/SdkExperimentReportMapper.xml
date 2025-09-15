@@ -99,18 +99,18 @@
             SELECT
                 A.`timestamp`,
                 A.group_id AS groupId,
-                SUM(IFNULL(B.report_api_reqs, 0)) AS req,
-                SUM(IFNULL(B.report_api_bids, 0)) AS bid,
-                SUM(IFNULL(B.report_api_shows, 0)) AS bidWin, <!-- 三方没有竞胜 -->
-                SUM(IFNULL(B.report_api_shows, 0)) AS imp,
-                SUM(IFNULL(B.report_api_clicks, 0)) AS click,
+                SUM(IFNULL(B.report_api_req, 0)) AS req,
+                SUM(IFNULL(B.report_api_bid, 0)) AS bid,
+                SUM(IFNULL(B.report_api_imp, 0)) AS bidWin, <!-- 三方没有竞胜 -->
+                SUM(IFNULL(B.report_api_imp, 0)) AS imp,
+                SUM(IFNULL(B.report_api_click, 0)) AS click,
                 SUM(IFNULL(B.report_api_income, 0)) AS income
             FROM (
                 SELECT
                     `timestamp`,
                     group_id,
                     channel_id,
-                    meta_adspot_id
+                    sdk_adspot_id
                 FROM
                     exp_report_daily
                 WHERE
@@ -122,14 +122,14 @@
                 SELECT
                     `timestamp`,
                     channel_id,
-                    meta_adspot_id,
-                    report_api_reqs,
-                    report_api_bids,
-                    report_api_shows,
-                    report_api_clicks,
+                    sdk_adspot_id,
+                    report_api_req,
+                    report_api_bid,
+                    report_api_imp,
+                    report_api_click,
                     report_api_income
                 FROM
-                    channel_detail_report_daily
+                    report_daily
                 WHERE
                     `timestamp` BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
                     AND adspot_id = #{adspotId}
@@ -137,7 +137,7 @@
             ) B
             ON A.`timestamp` = B.`timestamp`
             AND A.channel_id = B.channel_id
-            AND A.meta_adspot_id = B.meta_adspot_id
+            AND A.sdk_adspot_id = B.sdk_adspot_id
             GROUP BY
                 1,2
         ) UNION_TABLE
