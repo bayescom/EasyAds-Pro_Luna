@@ -1,17 +1,12 @@
 package com.easyads.management.distribution.strategy.model.group;
 
-import com.easyads.component.enums.DirectionTypeEnum;
 import com.easyads.component.utils.DataStringUtils;
 import com.easyads.management.common.Direction;
-import com.easyads.management.distribution.strategy.model.direction.DimensionTarget;
-import com.easyads.management.distribution.strategy.model.direction.TrafficTarget;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -21,16 +16,12 @@ public class SdkGroupStrategy {
     private int priority;
     private Map<String, Direction> direction;
     private SdkGroupDirectionOrigin sdkGroupDirectionOrigin;
-    private List<DimensionTarget> dimensionTargetList;
-    private List<TrafficTarget> customerDirection;
 
     public SdkGroupStrategy() {
         this.groupTargetId = null;
         this.name = "默认分组";
         this.priority = 1;
         this.sdkGroupDirectionOrigin = new SdkGroupDirectionOrigin(StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY);
-        this.dimensionTargetList = new ArrayList<>();
-        this.customerDirection = new ArrayList<>();
     }
 
     public Long getGroupTargetId() {
@@ -64,38 +55,6 @@ public class SdkGroupStrategy {
 
     public void setSdkGroupDirectionOrigin(SdkGroupDirectionOrigin sdkGroupDirectionOrigin) {
         this.sdkGroupDirectionOrigin = sdkGroupDirectionOrigin;
-    }
-
-    @JsonIgnore
-    public List<DimensionTarget> getDimensionTargetList() {
-        return dimensionTargetList;
-    }
-
-    public void setDimensionTargetList(List<DimensionTarget> dimensionTargetList) {
-        this.dimensionTargetList = dimensionTargetList;
-    }
-
-    public List<TrafficTarget> getCustomerDirection() {
-        this.customerDirection = new ArrayList<>();
-        for(DimensionTarget dt : dimensionTargetList) {
-            String property = 0 == dt.getOperator() ? "include" : "exclude";
-            int dimensionId = dt.getDimensionId();
-            if(3 != dt.getDimensionValueSource()) {
-                // 自定义定向
-                List<Integer> valueIdList;
-                List<String> valueDetailList;
-                valueIdList = DataStringUtils.stringExplodeIntegerList(dt.getDimensionValue(), ',');
-                if(StringUtils.isBlank(dt.getDimensionValueDetails())) {
-                    // 把valueIdList转成valueDetailList, 每个值前面拼接一个 0_ 字符串
-                    valueDetailList = valueIdList.stream().map(valueId -> String.format("0_%d", valueId)).toList();
-                } else {
-                    valueDetailList = DataStringUtils.stringExplodeList(dt.getDimensionValueDetails(), ',');
-                }
-                this.customerDirection.add(new TrafficTarget(dimensionId, property, valueIdList, valueDetailList));
-            }
-        }
-
-        return this.customerDirection;
     }
 
     public Map<String, Direction> getDirection() {
@@ -179,28 +138,12 @@ public class SdkGroupStrategy {
             this.direction.put("osv", new Direction("", new ArrayList<>()));
         }
 
-        // 新的设备包定向
-        // 没有设备包定向信息的时候，还是要强行塞一个值
-        this.direction.put("devicePackage", new Direction(StringUtils.EMPTY, new ArrayList<>()));
-        for(DimensionTarget dt : dimensionTargetList) {
-            String property = 0 == dt.getOperator() ? "include" : "exclude";
-            if(3 == dt.getDimensionValueSource()) {
-                // 新的设备包定向
-                List<String> packageIdList = DataStringUtils.stringExplodeList(dt.getDimensionValue(), ',');
-                this.direction.put("devicePackage", new Direction(property, packageIdList));
-            }
-        }
-
         return this.direction;
     }
 
     // 清理id信息，这个功能主要用在copy分组的时候，清理掉id信息
     public void clearIdInfo() {
         this.groupTargetId = null;
-
-        for(DimensionTarget dt : this.dimensionTargetList) {
-            dt.setModelId(null);
-        }
     }
 
     public void completeDbBean() {
@@ -265,39 +208,6 @@ public class SdkGroupStrategy {
             this.sdkGroupDirectionOrigin.setOsvList("!" + StringUtils.join(this.direction.get("osv").getValue(), ","));
         } else {
             this.sdkGroupDirectionOrigin.setOsvList(StringUtils.EMPTY);
-        }
-
-        /*
-         * 2. 设备包定向信息转成数据库可写信息
-         */
-        this.dimensionTargetList = new ArrayList<>();
-        // 自定义定向
-        if(CollectionUtils.isNotEmpty(this.customerDirection)) {
-            for(TrafficTarget tt : this.customerDirection) {
-                if(CollectionUtils.isEmpty(tt.getValueIdList())) continue;
-
-                int dimensionId = tt.getDimensionId();
-                String dimensionValue = StringUtils.join(tt.getValueIdList(), ",");
-                String dimensionValueDetails = StringUtils.join(tt.getValueDetailList(), ",");
-                int operator = "include".equals(tt.getProperty()) ? 0 : 1;
-                int dimensionValueSource = 1;
-                DimensionTarget dt = new DimensionTarget(this.groupTargetId, DirectionTypeEnum.SDK_GROUP.getValue(),
-                        operator, dimensionId, dimensionValueSource, dimensionValue, dimensionValueDetails);
-                this.dimensionTargetList.add(dt);
-            }
-        }
-
-        // 设备包定向
-        if(this.direction.containsKey("devicePackage")) {
-            Direction devicePackageDirection = this.direction.get("devicePackage");
-            if(CollectionUtils.isNotEmpty(devicePackageDirection.getValue())) {
-                int dimensionId = -1;
-                int operator = "include".equals(devicePackageDirection.getProperty()) ? 0 : 1;
-                String dimensionValue = StringUtils.join(devicePackageDirection.getValue(), ",");
-                int dimensionValueSource = 3;
-                dimensionTargetList.add(new DimensionTarget(this.groupTargetId, DirectionTypeEnum.SDK_GROUP.getValue(),
-                        operator, dimensionId, dimensionValueSource, dimensionValue, StringUtils.EMPTY));
-            }
         }
     }
 }

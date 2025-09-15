@@ -9,6 +9,8 @@ import java.util.List;
 public class SdkTraffic {
     @JsonIgnore
     private Integer id;
+    private Integer expId;
+    private String expName;
     private SdkPercentage trafficPercentage;
     private List<SdkTrafficGroup> trafficGroupList;
 }

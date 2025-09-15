@@ -16,9 +16,23 @@ public class DirectionUtils {
 
         Set<String> nameList = new LinkedHashSet<>();
         for(String value : valueList) {
-            // TODO AB测试 没有BlinkUtils和对应的表
-            String name = "未知";
-//            String name = BlinkUtils.makeNameMap.get(value);
+            String name = SystemUtils.getMakeNameById(value);
+            if(StringUtils.isNotBlank(name)) {
+                nameList.add(name);
+            }
+        }
+
+        return new ArrayList<>(nameList);
+    }
+
+    public static List<String> locationIdList2Name(List<String> idList) {
+        if(CollectionUtils.isEmpty(idList)) {
+            return new ArrayList<>();
+        }
+
+        Set<String> nameList = new LinkedHashSet<>();
+        for(String id : idList) {
+            String name = SystemUtils.getLocationNameById(id);
             if(StringUtils.isNotBlank(name)) {
                 nameList.add(name);
             }

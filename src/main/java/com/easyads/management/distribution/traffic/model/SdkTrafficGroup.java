@@ -1,15 +1,11 @@
 package com.easyads.management.distribution.traffic.model;
 
-import com.easyads.component.utils.JsonUtils;
 import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
 import com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentageStrategy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 public class SdkTrafficGroup {

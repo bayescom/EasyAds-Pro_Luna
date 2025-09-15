@@ -3,7 +3,6 @@ package com.easyads.management.distribution.strategy.service;
 import com.easyads.component.enums.SdkExperimentEnum;
 import com.easyads.component.exception.BadRequestException;
 import com.easyads.component.mapper.*;
-import com.easyads.management.distribution.strategy.model.direction.DimensionTarget;
 import com.easyads.management.distribution.strategy.model.exp.SdkExperiment;
 import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
 import com.easyads.management.distribution.strategy.model.percentage.SdkPercentage;
@@ -37,9 +36,6 @@ public class StrategyPercentageService {
 
     @Autowired
     private SdkChannelExperimentMapper sdkChannelExperimentMapper;
-
-    @Autowired
-    private DimensionMapper dimensionMapper;
 
     public Map<String, Object> getOneTrafficPercentageList(Integer adspotId) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
@@ -148,18 +144,6 @@ public class StrategyPercentageService {
                         .map(sgs -> new SdkTargetPercentage()).collect(Collectors.toList());
                 targetPercentageStrategyMapper.createTargetPercentage(sdkTargetPercentageList);
                 targetPercentageStrategyMapper.createGroupStrategyTrafficWithSupplier(adspotId, stp.getPercentageId(), sdkGroupStrategyList, sdkTargetPercentageList, supplierTraffic);
-                // 添加设备定向信息
-                for(SdkGroupStrategy sgs : sdkGroupStrategyList) {
-                    if (CollectionUtils.isNotEmpty(sgs.getDimensionTargetList())) {
-                        // 先更新设置modelId
-                        for(DimensionTarget dt : sgs.getDimensionTargetList()) {
-                            dt.setModelId(sgs.getGroupTargetId());
-                        }
-                        dimensionMapper.createDimensionTarget(sgs.getDimensionTargetList());
-                        // TODO AB测试 这个方法同步到redis，逻辑不是很懂，要问下遥哥
-//                        DimensionUtils.addDimensionTarget2Redis(sgs.getDimensionTargetList());
-                    }
-                }
             }
 
         }

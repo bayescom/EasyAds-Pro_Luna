@@ -2,15 +2,13 @@ package com.easyads.management.adspot.service;
 
 
 import com.easyads.component.exception.BadRequestException;
-import com.easyads.component.mapper.AdspotMapper;
-import com.easyads.component.mapper.GroupStrategyMapper;
-import com.easyads.component.mapper.PercentageStrategyMapper;
-import com.easyads.component.mapper.SdkTrafficMapper;
+import com.easyads.component.mapper.*;
 import com.easyads.management.adspot.model.Adspot;
 import com.easyads.management.adspot.model.AdspotFilterParams;
 
 import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
 import com.easyads.management.distribution.strategy.model.percentage.SdkPercentage;
+import com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentage;
 import com.easyads.management.distribution.traffic.model.SdkTrafficSingle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +27,9 @@ public class AdspotService {
 
     @Autowired
     private GroupStrategyMapper groupStrategyMapper;
+
+    @Autowired
+    private TargetPercentageStrategyMapper targetPercentageStrategyMapper;
 
     @Autowired
     private SdkTrafficMapper sdkTrafficMapper;
@@ -73,8 +74,11 @@ public class AdspotService {
         // 创建流量分组策略
         SdkGroupStrategy sgs = new SdkGroupStrategy();
         groupStrategyMapper.createOneGroupStrategy(sgs);
+        // 创建流量百分比分组信息
+        SdkTargetPercentage stp = new SdkTargetPercentage();
+        targetPercentageStrategyMapper.createOneTargetPercentage(stp);
         // 创建流量分发信息
-        SdkTrafficSingle sdkTrafficSingle = new SdkTrafficSingle(adspotId, sps.getPercentageId(), sgs.getGroupTargetId());
+        SdkTrafficSingle sdkTrafficSingle = new SdkTrafficSingle(adspotId, sps.getPercentageId(), sgs.getGroupTargetId(), stp.getTargetPercentageId());
         sdkTrafficMapper.createOnePercentageGroupStrategyTraffic(sdkTrafficSingle);
     }
 

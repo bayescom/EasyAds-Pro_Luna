@@ -197,11 +197,11 @@
         FROM
             adspot A
         LEFT OUTER JOIN
-            (
-                SELECT value, name
-                FROM code_list
-                WHERE code_type_id = 6 AND status = 1
-            ) C ON A.layout = C.value
+        (
+            SELECT value, name
+            FROM system_code
+            WHERE code_type_id = 2 AND status = 1
+        ) C ON A.adspot_type = C.value
         WHERE
             A.id IN (
                 SELECT DISTINCT B.adspot_id

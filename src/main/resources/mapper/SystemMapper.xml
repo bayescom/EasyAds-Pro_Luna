@@ -89,7 +89,7 @@
         WHERE mark_delete = 0
     </select>
 
-    <!-- -->
+    <!-- 获取媒体、广告位的对应的platform类型的映射关系 -->
     <select id = "getMediaAdspotPlatformMap" resultMap = "mapResult">
         SELECT CONCAT("adspot_", A.id) AS key_str, B.platform_type AS value_str
         FROM adspot A
@@ -108,6 +108,20 @@
         SELECT id AS key_str, media_id AS value_str
         FROM adspot
         WHERE mark_delete = 0
+    </select>
+
+    <!-- 获取地域id到名称的映射关系 -->
+    <select id = "getLocationIdNameMap" resultMap = "mapResult">
+        SELECT value AS key_str, name AS value_str
+        FROM system_code
+        WHERE code_type_id = 4 AND status = 1
+    </select>
+
+    <!-- 获取制造商id到名称的映射关系 -->
+    <select id = "getMakeIdNameMap" resultMap = "mapResult">
+        SELECT value AS key_str, name AS value_str
+        FROM system_code
+        WHERE code_type_id = 5 AND status = 1
     </select>
 
     <!-- 报表相关 -->
