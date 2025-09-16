@@ -33,9 +33,11 @@ public interface SdkTrafficMapper {
     int createOnePercentageGroupStrategyTraffic(SdkTrafficSingle sdkTraffic);
 
     int createGroupStrategyTraffic(Integer adspotId, Integer percentageId,
-                                   List<SdkGroupStrategy> sdkGroupStrategyList);
+                                   List<SdkGroupStrategy> sdkGroupStrategyList,
+                                   List<SdkTargetPercentage> sdkTargetPercentageList);
     int createGroupStrategyTrafficWithSupplier(Integer adspotId, Integer percentageId,
                                                List<SdkGroupStrategy> sdkGroupStrategyList,
+                                               List<SdkTargetPercentage> sdkTargetPercentageList,
                                                List<String> supplierTraffic);
     int deleteGroupStrategyTraffic(Set<Long> groupTargetIdList);
 }

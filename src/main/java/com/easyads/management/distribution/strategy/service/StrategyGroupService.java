@@ -75,7 +75,7 @@ public class StrategyGroupService {
             List<SdkTargetPercentage> sdkTargetPercentageList = addSdkGroupStrategyList.stream()
                     .map(sgs -> new SdkTargetPercentage()).collect(Collectors.toList());
             targetPercentageStrategyMapper.createTargetPercentage(sdkTargetPercentageList);
-            sdkTrafficMapper.createGroupStrategyTraffic(adspotId, percentageId, addSdkGroupStrategyList);
+            sdkTrafficMapper.createGroupStrategyTraffic(adspotId, percentageId, addSdkGroupStrategyList,  sdkTargetPercentageList);
         }
 
         // 对更新的group_strategy进行更新
