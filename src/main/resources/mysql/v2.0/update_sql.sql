@@ -1,6 +1,7 @@
 /*
     0. 新增软件版本标识符信息
 */
+DROP TABLE IF EXISTS `easyads_version`;
 CREATE TABLE `easyads_version` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `version` varchar(16) NOT NULL COMMENT '软件版本标识符',
@@ -17,7 +18,7 @@ INSERT INTO `easyads_version` (`version`) VALUES ('v2.0');
     1.1 修改已有表结构
 */
 ALTER TABLE `easyads`.`adspot`
-ADD COLUMN `closed_at` TINYINT(4) datetime DEFAULT NULL COMMENT '关闭时间' AFTER `status`;
+ADD COLUMN `closed_at` datetime DEFAULT NULL COMMENT '关闭时间' AFTER `status`;
 
 ALTER TABLE `easyads`.`sdk_group`
 ADD COLUMN `sdk_group_targeting_percentage_id` int(11) NOT NULL COMMENT '策略下的流量比例分组id' AFTER `sdk_group_targeting_id`;
@@ -38,6 +39,7 @@ ADD COLUMN `osv_list` text NOT NULL COMMENT '定向操作系统版本信息' AFT
 /*
     1.2 创建结构相关新表
 */
+DROP TABLE IF EXISTS `sdk_targeting_percentage`;
 CREATE TABLE `sdk_targeting_percentage` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `exp_id` int(11) DEFAULT '0' COMMENT 'AB实验对应的id',
@@ -47,6 +49,7 @@ CREATE TABLE `sdk_targeting_percentage` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `sdk_experiment`;
 CREATE TABLE `sdk_experiment` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `adspot_id` int(11) DEFAULT NULL COMMENT '广告位id',
@@ -63,6 +66,7 @@ CREATE TABLE `sdk_experiment` (
     1.3 创建AB实验报表
 */
 
+DROP TABLE IF EXISTS `exp_report_hourly`;
 CREATE TABLE `exp_report_hourly` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `timestamp` int(11) NOT NULL COMMENT '时间戳，当前小时的0分',
@@ -83,6 +87,7 @@ CREATE TABLE `exp_report_hourly` (
   UNIQUE KEY `uniKey` (`timestamp`,`media_id`,`adspot_id`,`sdk_adspot_id`,`channel_id`,`exp_type`,`exp_id`,`group_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `exp_report_daily`;
 CREATE TABLE `exp_report_daily` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `timestamp` int(11) NOT NULL COMMENT '时间戳，当天的0点',

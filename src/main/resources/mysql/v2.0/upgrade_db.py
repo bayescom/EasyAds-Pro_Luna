@@ -61,22 +61,29 @@ def check_update():
         cursor.close()
         conn.close()
 
-# ===================== 检查版本 =====================
+# ===================== 更新mysql数据库 =====================
+def run_sql_file(cursor, path):
+    with open(path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    # 去掉注释
+    lines = [line for line in content.splitlines() if not line.strip().startswith('--')]
+    statements = [s.strip() for s in '\n'.join(lines).split(';') if s.strip()]
+    for stmt in statements:
+        cursor.execute(stmt)
+
+
 def mysql_update():
     conn = pymysql.connect(**DB_CONFIG)
     cursor = conn.cursor()
-    with open(SQL_FILE, "r", encoding="utf-8") as f:
-        sql_content = f.read()
+
     try:
-        for result in cursor.execute(sql_content, multi=True):
-            # 可以处理返回结果或忽略
-            pass
+        run_sql_file(cursor, SQL_FILE)
         conn.commit()
         print("SQL 文件一次性执行完成！")
         return True
     except Exception as e:
         conn.rollback()
-        print("升级失败:", e)
+        print("数据库更新升级失败:", e)
         return False
     finally:
         cursor.close()
@@ -112,10 +119,10 @@ def update_sdk_group():
             cursor.executemany(update_sql, update_values)
 
             conn.commit()
-            print(f"Processed batch {i} ~ {i + len(batch) - 1}")
+        print("Group数据更新升级完成！")
     except Exception as e:
         conn.rollback()
-        print("升级失败:", e)
+        print("Group数据更新升级失败:", e)
     finally:
         cursor.close()
         conn.close()
@@ -166,9 +173,10 @@ def update_sdk_experiment():
                         """ % (experiment_id, ','.join(str(sg[0]) for sg in sdk_groups))
             cursor.execute(update_percentage_sql)
             conn.commit()
+        print("Experiment数据更新升级完成！")
     except Exception as e:
         conn.rollback()
-        print("升级失败:", e)
+        print("Experiment数据更新升级失败:", e)
     finally:
         cursor.close()
         conn.close()
@@ -190,9 +198,10 @@ def main():
             return
 
         for step in UPGRADE_STEPS:
-            if False == step(cursor):
+            if False == step():
                 print("升级失败，请检查错误日志")
                 return
+        print("升级成功！")
     except Exception as e:
         print("升级失败:", e)
 
