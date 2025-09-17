@@ -12,7 +12,8 @@ CREATE TABLE `sdk_report_api_params` (
   `params` text COMMENT 'Report API参数',
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
   `mark_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '软删除',
+  `auto_create_status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '自动创建广告位功能状态',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 SET FOREIGN_KEY_CHECKS = 1;
