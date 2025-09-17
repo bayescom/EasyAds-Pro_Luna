@@ -1,7 +1,7 @@
 {
   "host": "${MYSQL_URL}",
-  "user": "root",
+  "user": "${MYSQL_USER}",
   "password": "${MYSQL_USER}",
-  "database": "${MYSQL_PASSWORD}",
+  "database": "easyads",
   "port": ${MYSQL_PORT}
 }
