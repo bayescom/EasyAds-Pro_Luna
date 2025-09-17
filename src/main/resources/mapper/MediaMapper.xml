@@ -119,7 +119,7 @@
     </update>
 
     <update id = "closeOneMediaAllAdspot">
-        UPDATE adspot SET status = 0
+        UPDATE ssp_adspot SET status = 0, closed_at = CURRENT_TIMESTAMP
         WHERE media_id = #{mediaId}
     </update>
 </mapper>

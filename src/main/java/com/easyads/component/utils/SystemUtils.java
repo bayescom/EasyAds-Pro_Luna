@@ -38,6 +38,9 @@ public class SystemUtils implements CommandLineRunner {
     private static Map<String, String> SDK_ADN_ID_NAME_MAP = new HashMap<>();
     private static Map<Integer, List<Integer>> ADSPOT_TYPE_ID_MAP = new HashMap<>();
     private static Map<String, Integer> MEDIA_ADSPOT_PLATFORM_MAP = new HashMap<>();
+    private static Map<String, String> ADSPOT_ID_MEDIA_ID_MAP = new HashMap<>();
+    private static Map<String, String> LOCATION_ID_NAME_MAP = new HashMap<>();
+    private static Map<String, String> MAKE_ID_NAME_MAP = new HashMap<>();
 
     private static Map<Integer, List<Integer>> getAdspotTypeIdMapData(List<KeyValue> adspotTypeList) {
         Map<Integer, List<Integer>> resultMap = new HashMap<>();
@@ -78,6 +81,9 @@ public class SystemUtils implements CommandLineRunner {
         SDK_ADN_ID_NAME_MAP = getKeyValueMap(systemMapper.getSdkAdnIdNameMap());
         ADSPOT_TYPE_ID_MAP = getAdspotTypeIdMapData(systemMapper.getAdspotTypeIdMap());
         MEDIA_ADSPOT_PLATFORM_MAP = getMediaAdspotPlatformMap(systemMapper.getMediaAdspotPlatformMap());
+        ADSPOT_ID_MEDIA_ID_MAP = getKeyValueMap(systemMapper.getAdspotIdMediaIdMap());
+        LOCATION_ID_NAME_MAP = getKeyValueMap(systemMapper.getLocationIdNameMap());
+        MAKE_ID_NAME_MAP = getKeyValueMap(systemMapper.getMakeIdNameMap());
     }
 
     public static Integer getPlatformById(String mediaId, String adspotId) {
@@ -149,6 +155,33 @@ public class SystemUtils implements CommandLineRunner {
             refresh();
         }
         return ADSPOT_TYPE_ID_MAP.get(type);
+    }
+
+    public static String getMediaIdByAdspotId(String id) {
+        String name = ADSPOT_ID_MEDIA_ID_MAP.get(id);
+        if(StringUtils.isBlank(name)) {
+            // 没有找到，刷新一下
+            refresh();
+        }
+        return ADSPOT_ID_MEDIA_ID_MAP.get(id);
+    }
+
+    public static String getMakeNameById(String id) {
+        String name = MAKE_ID_NAME_MAP.get(id);
+        if(StringUtils.isBlank(name)) {
+            // 没有找到，刷新一下
+            refresh();
+        }
+        return MAKE_ID_NAME_MAP.get(id);
+    }
+
+    public static String getLocationNameById(String id) {
+        String name = LOCATION_ID_NAME_MAP.get(id);
+        if(StringUtils.isBlank(name)) {
+            // 没有找到，刷新一下
+            refresh();
+        }
+        return LOCATION_ID_NAME_MAP.get(id);
     }
 
     public static int getYesterdayMediaReportDailyStatus() {

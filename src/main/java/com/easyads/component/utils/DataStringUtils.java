@@ -1,5 +1,6 @@
 package com.easyads.component.utils;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
@@ -122,6 +123,37 @@ public class DataStringUtils {
             mapList.add(convertClass2Map(entity));
         }
         return mapList;
+    }
+
+    /**
+     * 将一个类T的list 转换成为 类T的两个成员变量作为键值对的map
+     */
+    public static <T, K, V> Map<K, V> convertClassList2Map(List<T> list, String key, String value) throws Exception {
+        Map<K, V> map = new HashMap<>();
+        if (CollectionUtils.isEmpty(list)) return map;
+        Field keyField = list.getFirst().getClass().getDeclaredField(key);
+        Field valueField = list.getFirst().getClass().getDeclaredField(value);
+        keyField.setAccessible(true);
+        valueField.setAccessible(true);
+
+        for (T t : list) {
+            map.put((K) keyField.get(t), (V) valueField.get(t));
+        }
+        return map;
+    }
+
+    /**
+     * 将一个类T的list 转换成为 类T的一个成员变量作为键，类T对象作为值的map
+     */
+    public static <T, K> Map<K, T> convertClassList2Map(List<T> list, String key) throws Exception {
+        Map<K, T> map = new HashMap<>();
+        Field keyField = list.getFirst().getClass().getDeclaredField(key);
+        keyField.setAccessible(true);
+
+        for (T t : list) {
+            map.put((K) keyField.get(t), t);
+        }
+        return map;
     }
 
     /**

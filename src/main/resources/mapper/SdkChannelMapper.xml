@@ -165,14 +165,14 @@
 
     <insert id = "createOneAdspotSdkChannel" useGeneratedKeys="true" keyProperty="sdkChannel.id">
         INSERT INTO adspot_sdk_channel
-        (adspot_id, adn_id, report_api_id, name, time_out, supplier_params,
-            bid_price, is_head_bidding, bid_ratio,
-            daily_req_limit, daily_imp_limit,
-            device_daily_req_limit, device_daily_imp_limit, device_request_interval,
-            location_list, make_list, osv_list, app_versions,
-            cpm_update_time, is_auto_create,
-            supplier_adspot_config
-        )
+            (adspot_id, adn_id, report_api_id, name, time_out, supplier_params,
+                bid_price, is_head_bidding, bid_ratio,
+                daily_req_limit, daily_imp_limit,
+                device_daily_req_limit, device_daily_imp_limit, device_request_interval,
+                location_list, make_list, osv_list, app_versions,
+                cpm_update_time, is_auto_create,
+                supplier_adspot_config
+            )
         VALUES
         (
             #{adspotId}, #{sdkChannel.adnId}, #{sdkChannel.reportApiParam.id},

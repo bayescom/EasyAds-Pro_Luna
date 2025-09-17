@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyads.component.mapper.SdkExperimentReportMapper">
+
+
+    <select id="getGroupReportDataMap" resultType="com.easyads.management.experiment.report.model.bean.SdkExperimentGroupReportData">
+        SELECT
+            groupId,
+            SUM(req) AS req,
+            SUM(bid) AS bid,
+            SUM(bidWin) AS bidWin,
+            SUM(imp) AS imp,
+            SUM(click) AS click,
+            SUM(income) AS income
+        FROM
+            <include refid="groupReportDataUnionTableSql"></include>
+        GROUP BY
+            1
+    </select>
+
+    <select id="getDailyGroupReportDataList" resultType="com.easyads.management.experiment.report.model.bean.SdkExperimentGroupReportData">
+        SELECT
+            `timestamp`,
+            groupId,
+            SUM(req) AS req,
+            SUM(bid) AS bid,
+            SUM(bidWin) AS bidWin,
+            SUM(imp) AS imp,
+            SUM(click) AS click,
+            SUM(income) AS income
+        FROM
+            <include refid="groupReportDataUnionTableSql"></include>
+        GROUP BY
+            1,2
+    </select>
+
+    <sql id="groupReportDataUnionTableSql">
+        <choose>
+            <when test="isThird">
+                <include refid="thirdGroupReportDataUnionTableSql"></include>
+            </when>
+            <otherwise>
+                <include refid="easyadsGroupReportDataUnionTableSql"></include>
+            </otherwise>
+        </choose>
+    </sql>
+
+    <!-- 自己数据天+小时数据的联合表 -->
+    <sql id="easyadsGroupReportDataUnionTableSql">
+        (
+        <if test="dailyBeginTime != null">
+            SELECT
+                `timestamp`,
+                group_id AS groupId,
+                SUM(reqs) AS req,
+                SUM(bids) AS bid,
+                SUM(wins) AS bidWin,
+                SUM(shows) AS imp,
+                SUM(clicks) AS click,
+                SUM(income) AS income
+            FROM
+                exp_report_daily
+            WHERE
+                `timestamp` BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
+                AND exp_id = #{expId}
+            GROUP BY
+                `timestamp`,
+                group_id
+        </if>
+        <if test="dailyBeginTime != null and hourlyBeginTime != null">
+            UNION ALL
+        </if>
+        <!-- 因为不涉及小时数据，小时表的时间戳全部统一成当天0点的 -->
+        <if test="hourlyBeginTime != null">
+            SELECT
+                #{hourlyBeginTime} AS `timestamp`,
+                group_id AS groupId,
+                SUM(reqs) AS req,
+                SUM(bids) AS bid,
+                SUM(wins) AS bidWin,
+                SUM(shows) AS imp,
+                SUM(clicks) AS click,
+                SUM(income) AS income
+            FROM
+                exp_report_hourly
+            WHERE
+                `timestamp` BETWEEN #{hourlyBeginTime} AND #{hourlyEndTime}
+                AND exp_id = #{expId}
+            GROUP BY
+                `timestamp`,
+                group_id
+        </if>
+        ) UNION_TABLE
+    </sql>
+
+    <!-- 三方数据天表，三方数据没有小时表 -->
+    <sql id="thirdGroupReportDataUnionTableSql">
+        (
+            SELECT
+                A.`timestamp`,
+                A.group_id AS groupId,
+                SUM(IFNULL(B.report_api_req, 0)) AS req,
+                SUM(IFNULL(B.report_api_bid, 0)) AS bid,
+                SUM(IFNULL(B.report_api_imp, 0)) AS bidWin, <!-- 三方没有竞胜 -->
+                SUM(IFNULL(B.report_api_imp, 0)) AS imp,
+                SUM(IFNULL(B.report_api_click, 0)) AS click,
+                SUM(IFNULL(B.report_api_income, 0)) AS income
+            FROM (
+                SELECT
+                    `timestamp`,
+                    group_id,
+                    channel_id,
+                    sdk_adspot_id
+                FROM
+                    exp_report_daily
+                WHERE
+                    `timestamp` BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
+                    AND adspot_id = #{adspotId}
+                    AND exp_id = #{expId}
+            ) A
+            LEFT JOIN (
+                SELECT
+                    `timestamp`,
+                    channel_id,
+                    sdk_adspot_id,
+                    report_api_req,
+                    report_api_bid,
+                    report_api_imp,
+                    report_api_click,
+                    report_api_income
+                FROM
+                    report_daily
+                WHERE
+                    `timestamp` BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
+                    AND adspot_id = #{adspotId}
+            ) B
+            ON A.`timestamp` = B.`timestamp`
+            AND A.channel_id = B.channel_id
+            AND A.sdk_adspot_id = B.sdk_adspot_id
+            GROUP BY
+                1,2
+        ) UNION_TABLE
+    </sql>
+</mapper>

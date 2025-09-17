@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyads.component.mapper.SdkExperimentMapper">
+
+    <resultMap id = "sdkExperimentMap" type = "com.easyads.management.experiment.exp.model.bean.SdkExperimentBean">
+        <result property = "id" column = "id" />
+        <result property = "adspotId" column = "adspot_id" />
+        <result property = "adspotName" column = "adspot_name" />
+        <result property = "mediaId" column = "media_id" />
+        <result property = "mediaName" column = "media_name" />
+        <result property = "experimentType" column = "experiment_type" />
+        <result property = "experimentName" column = "experiment_name" />
+        <result property = "status" column = "status" />
+        <result property = "createdAt" column = "created_at" />
+        <result property = "endAt" column = "end_at" />
+    </resultMap>
+
+    <select id = "getSdkExperimentCount" parameterType = "com.easyads.management.experiment.exp.model.filter.SdkExperimentFilterParams" resultType = "java.lang.Integer">
+        SELECT
+            COUNT(DISTINCT A.id)
+        FROM
+            sdk_experiment A
+        LEFT JOIN
+            adspot B ON A.adspot_id = B.id
+        LEFT JOIN
+            media C ON B.media_id = C.id
+        WHERE
+            1 = 1
+            <if test="mediaIds != null and mediaIds.size() != 0">
+                AND  B.media_id in
+                <foreach collection="mediaIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="adspotIds != null and adspotIds.size() != 0">
+                AND A.adspot_id in
+                <foreach collection="adspotIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="expIds != null and expIds.size() != 0">
+                AND A.id in
+                <foreach collection="expIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="expType != null">
+                AND A.experiment_type = #{expType}
+            </if>
+            <if test="status != null">
+                <!-- status的值为: 1（测试中），0（已结束），2（已暂停），其中暂停表示的是广告位关掉了，但是测试没结束-->
+                <choose>
+                    <when test="status == 2">
+                        AND B.status = 0
+                    </when>
+                    <otherwise>
+                        AND A.status = #{status} AND B.status = 1
+                    </otherwise>
+                </choose>
+            </if>
+    </select>
+
+    <select id = "getSdkExperimentList" parameterType = "com.easyads.management.experiment.exp.model.filter.SdkExperimentFilterParams" resultMap="sdkExperimentMap">
+        SELECT
+            A.id,
+            A.adspot_id,
+            B.adspot_name,
+            B.media_id,
+            C.media_name,
+            A.experiment_type,
+            A.experiment_name,
+            <!--   广告位上状态关闭之后，前端显示是 【已暂停】    -->
+            CASE
+                WHEN A.end_at IS NOT NULL THEN 0
+                WHEN B.status = 0 THEN 2
+                ELSE 1
+            END AS status,
+            A.created_at,
+            COALESCE(A.end_at, B.closed_at) AS end_at
+        FROM
+            sdk_experiment A
+        LEFT JOIN
+            adspot B ON A.adspot_id = B.id
+        LEFT JOIN
+            media C ON B.media_id = C.id
+        WHERE
+            1 = 1
+            <if test="mediaIds != null and mediaIds.size() != 0">
+                AND B.media_id in
+                <foreach collection="mediaIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="adspotIds != null and adspotIds.size() != 0">
+                AND A.adspot_id in
+                <foreach collection="adspotIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="expIds != null and expIds.size() != 0">
+                AND A.id in
+                <foreach collection="expIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="expType != null">
+                AND A.experiment_type = #{expType}
+            </if>
+            <if test="status != null">
+                <!-- status的值为: 1（测试中），0（已结束），2（已暂停），其中暂停表示的是广告位关掉了，但是测试没结束-->
+                <choose>
+                    <when test="status == 2">
+                        AND B.closed_at IS NOT NULL
+                    </when>
+                    <otherwise>
+                        AND A.status = #{status} AND B.closed_at IS NULL
+                    </otherwise>
+                </choose>
+            </if>
+            ORDER BY A.status desc, A.created_at desc
+            <if test="limit != null">
+                limit #{limit}
+                <if test="offset != null">
+                    offset #{offset}
+                </if>
+            </if>
+    </select>
+
+    <select id = "getOneSdkExperimentByExpId" resultMap="sdkExperimentMap">
+        SELECT
+            A.id,
+            A.adspot_id,
+            B.adspot_name,
+            B.media_id,
+            C.media_name,
+            A.experiment_type,
+            A.experiment_name,
+            <!--   广告位上状态关闭之后，前端显示是 【已暂停】    -->
+            CASE
+                WHEN A.end_at IS NOT NULL THEN 0
+                WHEN B.status = 0 THEN 2
+                ELSE 1
+            END AS status,
+            A.created_at,
+            COALESCE(A.end_at, B.closed_at) AS end_at
+        FROM
+            sdk_experiment A
+        LEFT JOIN
+            adspot B ON A.adspot_id = B.id
+        LEFT JOIN
+            media C ON B.media_id = C.id
+        WHERE
+            1 = 1
+            <if test="expId != null">
+                AND A.id = #{expId}
+            </if>
+    </select>
+
+    <!--  获取筛选框的测试名称的列表  -->
+    <select id = "getSdkExperimentFilterList" resultType="com.easyads.management.experiment.exp.model.bean.SdkExperimentFilterUnit">
+        SELECT
+            id AS value,
+            experiment_name AS name
+        FROM
+            sdk_experiment
+    </select>
+
+    <!--  获取筛选框的媒体列表  -->
+    <select id = "getSdkExperimentFilterMediaList" resultType="com.easyads.management.report.model.bean.filter.MediaFilterUnit">
+        SELECT
+            A.id AS value,
+            A.media_name AS name,
+            A.platform_type AS platform
+        FROM
+            media A
+        WHERE
+            A.id IN (
+                SELECT DISTINCT C.media_id
+                FROM
+                    sdk_experiment B
+                JOIN
+                    adspot C ON B.adspot_id = C.id
+                WHERE
+                    B.adspot_id IS NOT NULL
+            )
+    </select>
+
+    <!--  获取筛选框的广告位列表  -->
+    <select id = "getSdkExperimentFilterAdspotList" parameterType = "com.easyads.management.experiment.exp.model.filter.SdkExperimentFilterParams" resultType="com.easyads.management.report.model.bean.filter.AdspotFilterUnit">
+        SELECT
+            A.id AS value,
+            A.adspot_name AS name,
+            C.name AS adspotType
+        FROM adspot A
+        LEFT OUTER JOIN
+        (
+            SELECT value, name
+            FROM system_code
+            WHERE code_type_id = 2 AND status = 1
+        ) C ON A.adspot_type = C.value
+        WHERE
+            A.id IN (
+                SELECT DISTINCT B.adspot_id
+                FROM
+                    sdk_experiment B
+                JOIN
+                    adspot C ON B.adspot_id = C.id  <!-- 添加JOIN以获取media_id -->
+                WHERE
+                    B.adspot_id IS NOT NULL
+                    <if test = "mediaIds != null and mediaIds.size() != 0">
+                        AND C.media_id IN
+                        <foreach collection="mediaIds" item="item" separator="," open="(" close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+            )
+    </select>
+    
+    <select id="getSdkGroupList" resultType="com.easyads.management.experiment.report.model.bean.SdkExperimentGroup">
+        SELECT
+            id AS groupId,
+            tag,
+            percentage,
+            CONCAT(percentage, '%') AS percentageString
+        FROM
+            <choose>
+                <when test="expType == 1">
+                    sdk_group_percentage
+                </when>
+                <otherwise>
+                    sdk_targeting_percentage
+                </otherwise>
+            </choose>
+        WHERE
+            exp_id = #{expId}
+    </select>
+
+    <select id="getSdkGroupNameMap" resultType="String">
+        SELECT
+            id AS groupId,
+            tag,
+        FROM
+        <choose>
+            <when test="expType == 1">
+                sdk_group_percentage
+            </when>
+            <otherwise>
+                sdk_targeting_percentage
+            </otherwise>
+        </choose>
+        WHERE
+        exp_id = #{expId}
+    </select>
+</mapper>

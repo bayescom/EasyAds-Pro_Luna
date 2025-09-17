@@ -11,6 +11,9 @@
         <association property = "sdkGroupDirectionOrigin" javaType = "com.easyads.management.distribution.strategy.model.group.SdkGroupDirectionOrigin">
             <result property = "appVersion" column = "app_version" />
             <result property = "sdkVersion" column = "sdk_version" />
+            <result property = "locationList" column = "location_list" />
+            <result property = "makeList" column = "make_list" />
+            <result property = "osvList" column = "osv_list" />
         </association>
     </resultMap>
 
@@ -20,7 +23,10 @@
             B.name,
             B.priority,
             B.app_version,
-            B.sdk_version
+            B.sdk_version,
+            B.location_list,
+            B.make_list,
+            B.osv_list
         FROM sdk_group A
         JOIN sdk_group_targeting B ON A.sdk_group_targeting_id = B.id
         WHERE A.adspot_id = #{adspotId} AND A.sdk_group_percentage_id = #{percentageId}
@@ -32,7 +38,10 @@
             B.name,
             B.priority,
             B.app_version,
-            B.sdk_version
+            B.sdk_version,
+            B.location_list,
+            B.make_list,
+            B.osv_list
         FROM sdk_group A
         JOIN sdk_group_targeting B ON A.sdk_group_targeting_id = B.id
         WHERE A.adspot_id = #{adspotId} AND A.sdk_group_percentage_id = #{percentageId}
@@ -41,18 +50,34 @@
     <insert id = "createOneGroupStrategy" useGeneratedKeys = "true" keyProperty = "groupTargetId"
             parameterType = "com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy">
         INSERT INTO sdk_group_targeting
-            (name, priority, app_version, sdk_version)
+            (name, priority, app_version, sdk_version, location_list, make_list, osv_list)
         VALUES
-            (#{name}, #{priority}, #{sdkGroupDirectionOrigin.appVersion}, #{sdkGroupDirectionOrigin.sdkVersion})
+            (#{name}, #{priority}, #{sdkGroupDirectionOrigin.appVersion}, #{sdkGroupDirectionOrigin.sdkVersion},
+             #{sdkGroupDirectionOrigin.locationList}, #{sdkGroupDirectionOrigin.makeList},
+             #{sdkGroupDirectionOrigin.osvList})
     </insert>
+
+    <select id = "getOneTargetStrategy" resultType = "com.easyads.management.distribution.strategy.model.group.SdkGroupStrategySummary">
+        SELECT
+            id,
+            sdk_version,
+            app_version,
+            location_list,
+            make_list,
+            osv_list
+        FROM sdk_group_targeting
+        WHERE id = #{groupTargetId}
+    </select>
 
     <insert id = "createGroupStrategyList" useGeneratedKeys = "true" keyProperty = "sdkGroupStrategyList.groupTargetId">
         INSERT INTO sdk_group_targeting
-            (name, priority, app_version, sdk_version)
+            (name, priority, app_version, sdk_version, location_list, make_list, osv_list)
         VALUES
-        <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
-            (#{item.name}, #{item.priority}, #{item.sdkGroupDirectionOrigin.appVersion}, #{item.sdkGroupDirectionOrigin.sdkVersion})
-        </foreach>
+            <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
+                (#{item.name}, #{item.priority}, #{item.sdkGroupDirectionOrigin.appVersion}, #{item.sdkGroupDirectionOrigin.sdkVersion},
+                    #{item.sdkGroupDirectionOrigin.locationList}, #{item.sdkGroupDirectionOrigin.makeList},
+                    #{item.sdkGroupDirectionOrigin.osvList})
+            </foreach>
     </insert>
 
     <update id = "updateGroupStrategyList">
@@ -60,7 +85,10 @@
             UPDATE sdk_group_targeting
             SET name = #{item.name}, priority = #{item.priority},
                 app_version = #{item.sdkGroupDirectionOrigin.appVersion},
-                sdk_version = #{item.sdkGroupDirectionOrigin.sdkVersion}
+                sdk_version = #{item.sdkGroupDirectionOrigin.sdkVersion},
+                location_list = #{item.sdkGroupDirectionOrigin.locationList},
+                make_list = #{item.sdkGroupDirectionOrigin.makeList},
+                osv_list = #{item.sdkGroupDirectionOrigin.osvList}
             WHERE id = #{item.groupTargetId}
         </foreach>
     </update>

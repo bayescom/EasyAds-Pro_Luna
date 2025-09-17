@@ -139,7 +139,14 @@
             device_daily_req_limit = #{adspot.deviceDailyReqLimit},
             device_daily_imp_limit = #{adspot.deviceDailyImpLimit},
             device_req_interval = #{adspot.deviceReqInterval},
-            status = #{adspot.status}
+            <choose>
+                <when test="adspot.status == 0">
+                    status = #{adspot.status}, closed_at = CURRENT_TIMESTAMP
+                </when>
+                <otherwise>
+                    status = #{adspot.status}, closed_at = NULL
+                </otherwise>
+            </choose>
         WHERE id = #{adspotId}
     </update>
 

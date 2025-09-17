@@ -1,6 +1,5 @@
 package com.easyads.management.distribution.strategy.controller;
 
-
 import com.easyads.component.exception.BadRequestException;
 import com.easyads.component.rpc.ResponseCodeUtils;
 import com.easyads.component.utils.JsonUtils;
@@ -17,6 +16,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value="/adspot/sdk/group_strategy")
+// 流量分组管理
 public class StrategyGroupController {
 
     @Autowired

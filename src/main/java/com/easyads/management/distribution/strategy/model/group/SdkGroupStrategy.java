@@ -21,7 +21,7 @@ public class SdkGroupStrategy {
         this.groupTargetId = null;
         this.name = "默认分组";
         this.priority = 1;
-        this.sdkGroupDirectionOrigin = new SdkGroupDirectionOrigin(StringUtils.EMPTY, StringUtils.EMPTY);
+        this.sdkGroupDirectionOrigin = new SdkGroupDirectionOrigin(StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY);
     }
 
     public Long getGroupTargetId() {
@@ -98,23 +98,59 @@ public class SdkGroupStrategy {
             this.direction.put("sdkVersion", new Direction("", new ArrayList<>()));
         }
 
+        // 地域定向
+        String locationList = this.sdkGroupDirectionOrigin.getLocationList();
+        if(StringUtils.isNotBlank(locationList)) {
+            if(locationList.startsWith("!")) {
+                locationList = locationList.replace("!", StringUtils.EMPTY);
+                this.direction.put("location", new Direction("exclude", DataStringUtils.stringExplodeList(locationList, ",")));
+            } else {
+                this.direction.put("location", new Direction("include", DataStringUtils.stringExplodeList(locationList, ",")));
+            }
+            this.direction.put("location", new Direction("include", DataStringUtils.stringExplodeList(locationList, ",")));
+        } else {
+            this.direction.put("location", new Direction("", new ArrayList<>()));
+        }
+
+        // 制造商定向
+        String makeList = this.sdkGroupDirectionOrigin.getMakeList();
+        if(StringUtils.isNotBlank(makeList)) {
+            if(makeList.startsWith("!")) {
+                makeList = makeList.replace("!", StringUtils.EMPTY);
+                this.direction.put("maker", new Direction("exclude", DataStringUtils.stringExplodeList(makeList, ",")));
+            } else {
+                this.direction.put("maker", new Direction("include", DataStringUtils.stringExplodeList(makeList, ",")));
+            }
+        } else {
+            this.direction.put("maker", new Direction("", new ArrayList<>()));
+        }
+
+        // 操作系统版本定向
+        String osvList = this.sdkGroupDirectionOrigin.getOsvList();
+        if(StringUtils.isNotBlank(osvList)) {
+            if(osvList.startsWith("!")) {
+                osvList = osvList.replace("!", StringUtils.EMPTY);
+                this.direction.put("osv", new Direction("exclude", DataStringUtils.stringExplodeList(osvList, ",")));
+            } else {
+                this.direction.put("osv", new Direction("include", DataStringUtils.stringExplodeList(osvList, ",")));
+            }
+        } else {
+            this.direction.put("osv", new Direction("", new ArrayList<>()));
+        }
+
         return this.direction;
     }
 
     // 清理id信息，这个功能主要用在copy分组的时候，清理掉id信息
     public void clearIdInfo() {
         this.groupTargetId = null;
-//
-//        for(DimensionTarget dt : this.dimensionTargetList) {
-//            dt.setModelId(null);
-//        }
     }
 
     public void completeDbBean() {
         /*
          * 1. 定向信息转成数据库可写信息
          */
-        this.sdkGroupDirectionOrigin = new SdkGroupDirectionOrigin(StringUtils.EMPTY, StringUtils.EMPTY);
+        this.sdkGroupDirectionOrigin = new SdkGroupDirectionOrigin();
 
         // App版本定向
         String property = this.direction.get("appVersion").getProperty();
@@ -127,7 +163,7 @@ public class SdkGroupStrategy {
         } else if("<=".equals(property)) {
             this.sdkGroupDirectionOrigin.setAppVersion("<=" + StringUtils.join(this.direction.get("appVersion").getValue(), ","));
         } else {
-            this.sdkGroupDirectionOrigin.setAppVersion("");
+            this.sdkGroupDirectionOrigin.setAppVersion(StringUtils.EMPTY);
         }
 
         // SDK版本定向
@@ -141,7 +177,48 @@ public class SdkGroupStrategy {
         } else if("<=".equals(property)) {
             this.sdkGroupDirectionOrigin.setSdkVersion("<=" + StringUtils.join(this.direction.get("sdkVersion").getValue(), ","));
         } else {
-            this.sdkGroupDirectionOrigin.setSdkVersion("");
+            this.sdkGroupDirectionOrigin.setSdkVersion(StringUtils.EMPTY);
         }
+
+        // 地域定向
+        property = this.direction.get("location").getProperty();
+        if("include".equals(property)) {
+            this.sdkGroupDirectionOrigin.setLocationList(StringUtils.join(this.direction.get("location").getValue(), ","));
+        } else if("exclude".equals(property)) {
+            this.sdkGroupDirectionOrigin.setLocationList("!" + StringUtils.join(this.direction.get("location").getValue(), ","));
+        } else {
+            this.sdkGroupDirectionOrigin.setLocationList(StringUtils.EMPTY);
+        }
+
+        // 制造商定向
+        property = this.direction.get("maker").getProperty();
+        if("include".equals(property)) {
+            this.sdkGroupDirectionOrigin.setMakeList(StringUtils.join(this.direction.get("maker").getValue(), ","));
+        } else if("exclude".equals(property)) {
+            this.sdkGroupDirectionOrigin.setMakeList("!" + StringUtils.join(this.direction.get("maker").getValue(), ","));
+        } else {
+            this.sdkGroupDirectionOrigin.setMakeList(StringUtils.EMPTY);
+        }
+
+        // 操作系统版本定向
+        property = this.direction.get("osv").getProperty();
+        if("include".equals(property)) {
+            this.sdkGroupDirectionOrigin.setOsvList(StringUtils.join(this.direction.get("osv").getValue(), ","));
+        } else if("exclude".equals(property)) {
+            this.sdkGroupDirectionOrigin.setOsvList("!" + StringUtils.join(this.direction.get("osv").getValue(), ","));
+        } else {
+            this.sdkGroupDirectionOrigin.setOsvList(StringUtils.EMPTY);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "SdkGroupStrategy{" +
+                "groupTargetId=" + groupTargetId +
+                ", name='" + name + '\'' +
+                ", priority=" + priority +
+                ", direction=" + direction +
+                ", sdkGroupDirectionOrigin=" + sdkGroupDirectionOrigin +
+                '}';
     }
 }

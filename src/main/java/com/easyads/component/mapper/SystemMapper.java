@@ -28,6 +28,12 @@ public interface SystemMapper {
     List<KeyValue> getSdkAdnIdNameMap();
     // 获取媒体广告位平台映射
     List<KeyValue> getMediaAdspotPlatformMap();
+    // 获取广告位ID所属的媒体ID映射
+    List<KeyValue> getAdspotIdMediaIdMap();
+    // 获取国家和地区ID与名称的映射
+    List<KeyValue> getLocationIdNameMap();
+    // 获取手机品牌ID与名称的映射
+    List<KeyValue> getMakeIdNameMap();
 
     // 获取媒体昨天天表数据状态
     int getYesterdayMediaReportDailyStatus();

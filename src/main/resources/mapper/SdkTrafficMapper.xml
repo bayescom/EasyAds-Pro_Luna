@@ -4,16 +4,20 @@
 
     <resultMap id = "sdkTrafficMap" type = "com.easyads.management.distribution.traffic.model.SdkTraffic">
         <id property = "id" column = "sdk_group_percentage_id" />
+        <result property = "expId" column = "percentage_exp_id" />
+        <result property = "expName" column = "percentage_exp_name" />
 
-        <association property = "trafficPercentage" javaType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentageStrategy">
+        <association property = "trafficPercentage" javaType = "com.easyads.management.distribution.strategy.model.percentage.SdkPercentage">
             <id property = "percentageId" column = "sdk_group_percentage_id"/>
-            <result property = "tag" column = "tag" />
-            <result property = "percentage" column = "percentage" />
+            <result property = "tag" column = "group_tag" />
+            <result property = "percentage" column = "group_percentage" />
+            <result property = "status" column = "group_percentage_status" />
         </association>
 
         <collection property = "trafficGroupList" ofType = "com.easyads.management.distribution.traffic.model.SdkTrafficGroup">
-            <id property = "trafficId" column = "sdk_traffic_id"/>
-            <result property = "supplier_ids" column = "supplier_ids" />
+            <id property = "groupTargetId" column = "sdk_group_targeting_id" />
+            <result property = "expId" column = "target_percentage_exp_id" />
+            <result property = "expName" column = "target_percentage_exp_name" />
 
             <association property = "groupStrategy" javaType = "com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy">
                 <result property = "groupTargetId" column = "sdk_group_targeting_id" />
@@ -23,32 +27,127 @@
                 <association property = "sdkGroupDirectionOrigin" javaType = "com.easyads.management.distribution.strategy.model.group.SdkGroupDirectionOrigin">
                     <result property = "appVersion" column = "app_version" />
                     <result property = "sdkVersion" column = "sdk_version" />
+                    <result property = "locationList" column = "location_list" />
+                    <result property = "makeList" column = "make_list" />
+                    <result property = "osvList" column = "osv_list" />
                 </association>
             </association>
+
+            <collection property = "targetPercentageStrategyList" ofType = "com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentageStrategy">
+                <id property = "trafficId" column = "sdk_traffic_id"/>
+
+                <result property = "supplier_ids" column = "supplier_ids" />
+                <association property = "targetPercentage" javaType = "com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentage">
+                    <result property = "targetPercentageId" column = "sdk_targeting_percentage_id" />
+                    <result property = "tag" column = "target_group_tag" />
+                    <result property = "percentage" column = "target_group_percentage" />
+                    <result property = "status" column = "target_group_percentage_status" />
+                </association>
+            </collection>
         </collection>
     </resultMap>
 
     <!-- 主页面流量分发全局详细信息 -->
     <select id = "getOneAdspotSdkTrafficDetail" resultMap = "sdkTrafficMap">
         SELECT
-            A.id AS sdk_traffic_id,
             B.id AS sdk_group_percentage_id,
-            B.tag,
-            B.percentage,
+            B.tag AS group_tag,
+            B.exp_id AS percentage_exp_id,
+            B.exp_name AS percentage_exp_name,
+            B.percentage AS group_percentage,
+            B.status AS group_percentage_status,
             C.id AS sdk_group_targeting_id,
             C.name,
             C.priority,
             C.app_version,
             C.sdk_version,
+            C.location_list,
+            C.make_list,
+            C.osv_list,
+            A.id AS sdk_traffic_id,
+            D.exp_id AS target_percentage_exp_id,
+            D.exp_name AS target_percentage_exp_name,
+            D.id AS sdk_targeting_percentage_id,
+            D.tag AS target_group_tag,
+            D.percentage AS target_group_percentage,
+            D.status AS target_group_percentage_status,
             A.supplier_ids
         FROM sdk_group A
-        JOIN sdk_group_percentage B ON A.sdk_group_percentage_id = B.id
+        JOIN
+        (
+            SELECT X.*, Y.exp_name
+            FROM sdk_group_percentage X
+            LEFT OUTER JOIN
+            (
+                SELECT id, experiment_name AS exp_name
+                FROM sdk_experiment
+                WHERE experiment_type = 1 AND status = 1
+            ) Y ON X.exp_id = Y.id
+        ) B ON A.sdk_group_percentage_id = B.id
         JOIN sdk_group_targeting C ON A.sdk_group_targeting_id = C.id
+        JOIN
+        (
+            SELECT X.*, Y.exp_name
+            FROM sdk_targeting_percentage X
+            LEFT OUTER JOIN
+            (
+                SELECT id, experiment_name AS exp_name
+                FROM sdk_experiment
+                WHERE experiment_type = 2 AND status = 1
+            ) Y ON X.exp_id = Y.id
+        ) D ON A.sdk_group_targeting_percentage_id = D.id
         WHERE A.adspot_id = #{adspotId}
             <if test = "percentageId != null">
                 AND A.sdk_group_percentage_id = #{percentageId}
             </if>
         ORDER BY B.id, C.priority ASC
+    </select>
+
+    <!-- 获取指定某个策略下的流量分发详细信息 -->
+    <select id = "getOneAdspotSdkTargetTrafficDetail" resultMap = "sdkTrafficMap">
+        SELECT
+            B.id AS sdk_group_percentage_id,
+            B.tag AS group_tag,
+            B.percentage AS group_percentage,
+            B.status AS group_percentage_status,
+            C.id AS sdk_group_targeting_id,
+            C.name,
+            C.priority,
+            C.app_version,
+            C.sdk_version,
+            C.location_list,
+            C.make_list,
+            C.osv_list,
+            D.id AS target_id,
+            D.model_id,
+            D.model_type,
+            D.operator,
+            D.dimension_id,
+            D.value_source,
+            D.content,
+            D.dimension_value,
+            D.dimension_value_details,
+            A.id AS sdk_traffic_id,
+            E.id AS sdk_targeting_percentage_id,
+            E.tag AS target_group_tag,
+            E.percentage AS target_group_percentage,
+            E.status AS target_group_percentage_status,
+            A.supplier_ids
+        FROM sdk_group A
+                 JOIN sdk_group_percentage B ON A.sdk_group_percentage_id = B.id
+                 JOIN sdk_group_targeting C ON A.sdk_group_targeting_id = C.id
+                 JOIN sdk_targeting_percentage E ON A.sdk_group_targeting_percentage_id = E.id
+                 LEFT OUTER JOIN
+             (
+                 SELECT *
+                 FROM targeting_item
+                 WHERE model_type = 3
+             ) D ON C.id = D.model_id
+        WHERE
+            A.adspot_id = #{adspotId}
+          AND A.sdk_group_percentage_id = #{percentageId}
+          AND A.sdk_group_targeting_id = #{targetId}
+          AND A.sdk_group_targeting_percentage_id = #{targetPercentageId}
     </select>
 
     <!-- 流量分发设置 -->
@@ -77,49 +176,31 @@
         WHERE adspot_id = #{adspotId} AND supplier_ids rlike #{sdkChannelId}
     </select>
 
-
-    <!-- 流量切分更新导致分发设置更新 -->
-    <insert id = "createPercentageTraffic">
-        INSERT INTO sdk_group
-        (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id)
-        VALUES
-        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
-            (#{adspotId}, #{item.percentageId}, #{sdkGroupStrategyList[${index}].groupTargetId})
-        </foreach>
-    </insert>
-
-    <delete id = "deletePercentageTraffic">
-        DELETE FROM sdk_group
-        WHERE
-            sdk_group_percentage_id IN
-            <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
-                #{item}
-            </foreach>
-    </delete>
-
     <!-- 分组策略更新导致分发设置更新 -->
     <insert id = "createOnePercentageGroupStrategyTraffic" useGeneratedKeys = "true" keyProperty = "id"
             parameterType = "com.easyads.management.distribution.traffic.model.SdkTrafficSingle">
         INSERT INTO sdk_group
-        (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id)
-        VALUES (#{adspotId}, #{percentageId}, #{groupTargetId})
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
+        VALUES (#{adspotId}, #{percentageId}, #{groupTargetId}, #{targetPercentageId})
     </insert>
 
     <insert id = "createGroupStrategyTraffic">
         INSERT INTO sdk_group
-            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id)
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
         VALUES
             <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
-                (#{adspotId}, #{percentageId}, #{item.groupTargetId})
+                (#{adspotId}, #{percentageId}, #{item.groupTargetId}, #{sdkTargetPercentageList[${index}].targetPercentageId})
             </foreach>
     </insert>
 
     <insert id = "createGroupStrategyTrafficWithSupplier">
         INSERT INTO sdk_group
-            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, supplier_ids)
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id,
+                sdk_group_targeting_percentage_id, supplier_ids)
         VALUES
             <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
-                (#{adspotId}, #{percentageId}, #{item.groupTargetId}, #{supplierTraffic[${index}]})
+                (#{adspotId}, #{percentageId}, #{item.groupTargetId},
+                    #{sdkTargetPercentageList[${index}].targetPercentageId}, #{supplierTraffic[${index}]})
             </foreach>
     </insert>
 

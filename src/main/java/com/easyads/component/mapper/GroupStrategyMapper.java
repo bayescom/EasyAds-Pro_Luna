@@ -1,6 +1,7 @@
 package com.easyads.component.mapper;
 
 import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
+import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategySummary;
 import org.apache.ibatis.annotations.MapKey;
 import org.springframework.stereotype.Component;
 
@@ -18,4 +19,5 @@ public interface GroupStrategyMapper {
     int createGroupStrategyList(List<SdkGroupStrategy> sdkGroupStrategyList);
     int updateGroupStrategyList(List<SdkGroupStrategy> sdkGroupStrategyList);
     int deleteGroupStrategyList(Set<Long> groupTargetIdList);
+    SdkGroupStrategySummary getOneTargetStrategy(Long groupTargetId);
 }
