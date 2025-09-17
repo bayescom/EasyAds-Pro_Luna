@@ -11,6 +11,7 @@ CREATE TABLE `adspot_sdk_channel` (
   `adn_id` int(11) DEFAULT NULL COMMENT '关联的adn的id',
   `report_api_id` int(11) DEFAULT NULL COMMENT '关联到sdk_report_api_params的id',
   `name` varchar(255) DEFAULT NULL COMMENT '渠道的别名信息',
+  `is_auto_create` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否自动创建三方广告位',
   `supplier_params` text COMMENT '渠道参数, JSON格式',
   `time_out` int(11) DEFAULT '5000' COMMENT '超时时间',
   `daily_req_limit` int(11) DEFAULT '0' COMMENT '单日请求总上限',
@@ -27,6 +28,8 @@ CREATE TABLE `adspot_sdk_channel` (
   `is_head_bidding` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否竞价',
   `status` smallint(1) NOT NULL DEFAULT '1' COMMENT '开关状态 默认值1  ',
   `mark_delete` smallint(1) NOT NULL DEFAULT '0' COMMENT '标记删除，默认0  1未删除',
+  `cpm_update_time` int(11) DEFAULT NULL COMMENT '自动广告位的CPM更新有效最后时间',
+  `supplier_adspot_config` text COMMENT '存放自动创建三方广告源信息的JSON字段信息',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
