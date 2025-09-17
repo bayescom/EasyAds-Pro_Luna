@@ -10,6 +10,7 @@ import com.easyads.management.distribution.strategy.model.percentage.SdkTrafficP
 import com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentage;
 import com.easyads.management.distribution.traffic.model.SdkTraffic;
 import com.easyads.management.distribution.traffic.model.SdkTrafficGroup;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 // TODO AB测试 mapper和中间对象改名
 public class StrategyPercentageService {
@@ -115,7 +117,8 @@ public class StrategyPercentageService {
         // 添加默认策略的分组
         if(CollectionUtils.isNotEmpty(addDefaultSdkTrafficPercentageList)) {
             percentageStrategyMapper.createPercentageList(addDefaultSdkTrafficPercentageList);
-            List<SdkGroupStrategy> defaultSdkGroupStrategyList = Collections.nCopies(addDefaultSdkTrafficPercentageList.size(), new SdkGroupStrategy());
+            List<SdkGroupStrategy> defaultSdkGroupStrategyList = addDefaultSdkTrafficPercentageList.stream()
+                            .map(x -> new SdkGroupStrategy()).collect(Collectors.toList());
             groupStrategyMapper.createGroupStrategyList(defaultSdkGroupStrategyList);
             // 创建流量分发策略下的分组信息，默认只有一个组
             List<SdkTargetPercentage> sdkTargetPercentageList = defaultSdkGroupStrategyList.stream()

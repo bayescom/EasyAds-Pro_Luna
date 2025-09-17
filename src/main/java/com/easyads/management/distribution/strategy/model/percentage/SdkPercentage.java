@@ -10,7 +10,7 @@ public class SdkPercentage {
     private Float percentage;
     private Integer status;
     @JsonIgnore
-    private int expId;
+    private Integer expId;
     @JsonIgnore
     private Integer copyPercentageId;
 

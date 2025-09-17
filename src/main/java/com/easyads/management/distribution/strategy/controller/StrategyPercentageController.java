@@ -47,7 +47,7 @@ public class StrategyPercentageController {
                                           @RequestBody String requestBody,
                                           HttpServletRequest request, HttpServletResponse response) {
         try {
-            SdkTrafficPercentageExperiment sdkTrafficPercentageExperiment = JsonUtils.convertJsonNodeToObject(JsonUtils.getJsonNode(requestBody).get("trafficPercentageList"), SdkTrafficPercentageExperiment.class);
+            SdkTrafficPercentageExperiment sdkTrafficPercentageExperiment = JsonUtils.convertJsonToObject(requestBody, SdkTrafficPercentageExperiment.class);
             return adspotSdkPercentageService.updateTrafficPercentage(adspotId, sdkTrafficPercentageExperiment);
         } catch (BadRequestException e) {
             response.setStatus(400);

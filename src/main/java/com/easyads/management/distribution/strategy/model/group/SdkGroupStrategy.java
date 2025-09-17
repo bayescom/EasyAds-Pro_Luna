@@ -210,4 +210,15 @@ public class SdkGroupStrategy {
             this.sdkGroupDirectionOrigin.setOsvList(StringUtils.EMPTY);
         }
     }
+
+    @Override
+    public String toString() {
+        return "SdkGroupStrategy{" +
+                "groupTargetId=" + groupTargetId +
+                ", name='" + name + '\'' +
+                ", priority=" + priority +
+                ", direction=" + direction +
+                ", sdkGroupDirectionOrigin=" + sdkGroupDirectionOrigin +
+                '}';
+    }
 }

@@ -196,11 +196,11 @@
     <insert id = "createGroupStrategyTrafficWithSupplier">
         INSERT INTO sdk_group
             (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id,
-        sdk_group_targeting_percentage_id, supplier_ids)
-            VALUES
+                sdk_group_targeting_percentage_id, supplier_ids)
+        VALUES
             <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
                 (#{adspotId}, #{percentageId}, #{item.groupTargetId},
-                #{sdkTargetPercentageList[${index}].targetPercentageId}, #{supplierTraffic[${index}]})
+                    #{sdkTargetPercentageList[${index}].targetPercentageId}, #{supplierTraffic[${index}]})
             </foreach>
     </insert>
 

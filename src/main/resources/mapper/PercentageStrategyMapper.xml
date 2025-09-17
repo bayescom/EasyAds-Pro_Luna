@@ -22,7 +22,9 @@
         SELECT
             B.id AS percentageId,
             B.tag,
-            B.percentage
+            B.percentage,
+            B.status,
+            B.exp_id AS expId
         FROM
         (
             SELECT sdk_group_percentage_id
@@ -44,9 +46,9 @@
         INSERT INTO sdk_group_percentage
             (exp_id, tag, percentage, status)
         VALUES
-        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
-            (#{item.expId}, #{item.tag}, #{item.percentage}, #{item.status})
-        </foreach>
+            <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
+                (#{item.expId}, #{item.tag}, #{item.percentage}, #{item.status})
+            </foreach>
     </insert>
 
     <update id = "updatePercentageList">
@@ -60,54 +62,54 @@
     <!-- 流量切分更新导致分发设置更新 -->
     <insert id = "createPercentageTraffic">
         INSERT INTO sdk_group
-        (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
+            (adspot_id, sdk_group_percentage_id, sdk_group_targeting_id, sdk_group_targeting_percentage_id)
         VALUES
-        <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
-            (#{adspotId}, #{item.percentageId},
-            #{sdkGroupStrategyList[${index}].groupTargetId}, #{sdkTargetPercentageList[${index}].targetPercentageId})
-        </foreach>
+            <foreach collection = "trafficPercentageList" item = "item" index = "index" separator = ",">
+                (#{adspotId}, #{item.percentageId},
+                    #{sdkGroupStrategyList[${index}].groupTargetId}, #{sdkTargetPercentageList[${index}].targetPercentageId})
+            </foreach>
     </insert>
 
     <!-- 级联删除多个表的内容 -->
     <delete id = "deletePercentageTrafficCascade">
         DELETE FROM sdk_group_percentage
         WHERE
-        id IN
-        <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
-            #{item}
-        </foreach>;
+            id IN
+            <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                #{item}
+            </foreach>;
 
         DELETE FROM sdk_group_targeting
         WHERE
-        id IN
-        (
-        SELECT sdk_group_targeting_id
-        FROM sdk_group
-        WHERE sdk_group_percentage_id IN
-        <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
-            #{item}
-        </foreach>
-        GROUP BY 1
-        );
+            id IN
+            (
+                SELECT sdk_group_targeting_id
+                FROM sdk_group
+                WHERE sdk_group_percentage_id IN
+                    <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                        #{item}
+                    </foreach>
+                GROUP BY 1
+            );
 
         DELETE FROM sdk_targeting_percentage
         WHERE
-        id IN
-        (
-        SELECT sdk_group_targeting_percentage_id
-        FROM sdk_group
-        WHERE sdk_group_percentage_id IN
-        <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
-            #{item}
-        </foreach>
-        GROUP BY 1
-        );
+            id IN
+            (
+                SELECT sdk_group_targeting_percentage_id
+                FROM sdk_group
+                WHERE sdk_group_percentage_id IN
+                    <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                        #{item}
+                    </foreach>
+                GROUP BY 1
+            );
 
         DELETE FROM sdk_group
         WHERE
-        sdk_group_percentage_id IN
-        <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
-            #{item}
-        </foreach>
+            sdk_group_percentage_id IN
+            <foreach collection = "percentageIdList" item = "item" index = "index" open = "(" separator = "," close = ")">
+                #{item}
+            </foreach>
     </delete>
 </mapper>

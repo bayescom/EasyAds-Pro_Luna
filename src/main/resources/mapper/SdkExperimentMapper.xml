@@ -15,7 +15,6 @@
         <result property = "endAt" column = "end_at" />
     </resultMap>
 
-
     <select id = "getSdkExperimentCount" parameterType = "com.easyads.management.experiment.exp.model.filter.SdkExperimentFilterParams" resultType = "java.lang.Integer">
         SELECT
             COUNT(DISTINCT A.id)
@@ -61,7 +60,6 @@
             </if>
     </select>
 
-
     <select id = "getSdkExperimentList" parameterType = "com.easyads.management.experiment.exp.model.filter.SdkExperimentFilterParams" resultMap="sdkExperimentMap">
         SELECT
             A.id,
@@ -78,7 +76,7 @@
                 ELSE 1
             END AS status,
             A.created_at,
-            A.end_at
+            COALESCE(A.end_at, B.closed_at) AS end_at
         FROM
             sdk_experiment A
         LEFT JOIN
@@ -112,10 +110,10 @@
                 <!-- status的值为: 1（测试中），0（已结束），2（已暂停），其中暂停表示的是广告位关掉了，但是测试没结束-->
                 <choose>
                     <when test="status == 2">
-                        AND B.status = 0
+                        AND B.closed_at IS NOT NULL
                     </when>
                     <otherwise>
-                        AND A.status = #{status} AND B.status = 1
+                        AND A.status = #{status} AND B.closed_at IS NULL
                     </otherwise>
                 </choose>
             </if>
@@ -144,7 +142,7 @@
                 ELSE 1
             END AS status,
             A.created_at,
-            A.end_at
+            COALESCE(A.end_at, B.closed_at) AS end_at
         FROM
             sdk_experiment A
         LEFT JOIN
@@ -185,7 +183,6 @@
                 WHERE
                     B.adspot_id IS NOT NULL
             )
-
     </select>
 
     <!--  获取筛选框的广告位列表  -->

@@ -75,8 +75,8 @@
         VALUES
             <foreach collection = "sdkGroupStrategyList" item = "item" index = "index" separator = ",">
                 (#{item.name}, #{item.priority}, #{item.sdkGroupDirectionOrigin.appVersion}, #{item.sdkGroupDirectionOrigin.sdkVersion},
-                #{item.sdkGroupDirectionOrigin.locationList}, #{item.sdkGroupDirectionOrigin.makeList},
-                #{item.sdkGroupDirectionOrigin.osvList})
+                    #{item.sdkGroupDirectionOrigin.locationList}, #{item.sdkGroupDirectionOrigin.makeList},
+                    #{item.sdkGroupDirectionOrigin.osvList})
             </foreach>
     </insert>
 

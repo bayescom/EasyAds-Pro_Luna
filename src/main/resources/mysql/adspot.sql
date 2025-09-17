@@ -15,6 +15,7 @@ CREATE TABLE `adspot` (
   `device_req_interval` int(11) DEFAULT NULL COMMENT '设备请求频控',
   `timeout` int(11) NOT NULL DEFAULT '5000' COMMENT '广告位超时时间，默认5000毫秒',
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
+  `closed_at` datetime DEFAULT NULL COMMENT '关闭时间',
   `mark_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '软删除',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `adspot_media_ref` (`media_id`) USING BTREE
