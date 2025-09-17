@@ -52,6 +52,8 @@
     <select id = "getSdkGroupStrategyOrigin" resultType = "com.easyads.export.model.origin.SdkGroupStrategyOrigin">
         SELECT
             A.adspot_id,
+            IF(B.exp_id = 0, null, B.exp_id) AS group_exp_id,
+            IF(B.exp_id = 0, null, B.experiment_name) AS group_exp_name,
             B.id AS group_id,
             B.tag AS group_name,
             B.percentage AS percentage,
@@ -60,9 +62,40 @@
             C.priority,
             C.sdk_version,
             C.app_version,
+            C.location_list,
+            C.make_list,
+            C.osv_list,
+            IF(D.exp_id = 0, null, D.exp_id) AS strategy_percentage_exp_id,
+            IF(D.exp_id = 0, null, D.experiment_name) AS strategy_percentage_exp_name,
+            D.id AS strategy_percentage_id,
+            D.percentage AS strategy_percentage,
+            D.tag AS strategy_percentage_name,
             A.supplier_ids
         FROM sdk_group A
-        JOIN sdk_group_percentage B ON A.sdk_group_percentage_id = B.id
+        JOIN
+        (
+            SELECT X.*, Y.experiment_name
+            FROM sdk_group_percentage X
+            LEFT OUTER JOIN
+            (
+                SELECT *
+                FROM sdk_experiment
+                WHERE experiment_type = 1 AND status = 1
+            ) Y ON X.exp_id = Y.id
+        ) B ON A.sdk_group_percentage_id = B.id
         JOIN sdk_group_targeting C ON A.sdk_group_targeting_id = C.id
+        JOIN
+        (
+            SELECT X.*, Y.experiment_name
+            FROM sdk_targeting_percentage X
+            LEFT OUTER JOIN
+            (
+                SELECT *
+                FROM sdk_experiment
+                WHERE experiment_type = 2 AND status = 1
+            ) Y ON X.exp_id = Y.id
+        ) D ON A.sdk_group_targeting_percentage_id = D.id
+        WHERE
+        B.status = 1 AND D.status = 1
     </select>
 </mapper>

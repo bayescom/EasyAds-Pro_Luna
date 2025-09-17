@@ -13,6 +13,8 @@ import java.util.Map;
 @Data
 public class SdkGroupStrategyOrigin {
     private int adspot_id;
+    private Integer group_exp_id;
+    private String group_exp_name;
     private int group_id;
     private String group_name;
     private int percentage;
@@ -21,6 +23,14 @@ public class SdkGroupStrategyOrigin {
     private int priority;
     private String sdk_version;
     private String app_version;
+    private String location_list;
+    private String make_list;
+    private String osv_list;
+    private Integer strategy_percentage_exp_id;
+    private String strategy_percentage_exp_name;
+    private int strategy_percentage_id;
+    private String strategy_percentage_name;
+    private int strategy_percentage;
     private String supplier_ids;
 
 

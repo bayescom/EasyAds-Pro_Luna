@@ -11,6 +11,8 @@ import java.util.Map;
 
 @Getter
 public class SdkFlowGroup {
+    private Integer group_percentage_exp_id;
+    private String group_percentage_exp_name;
     private int group_id;
     private String group_name;
     private int percentage;
@@ -20,6 +22,8 @@ public class SdkFlowGroup {
                         Map<String, Sdk> sdkConfMap) {
         SdkGroupStrategyOrigin sgso = sdkGroupStrategyOriginList.get(0);
         this.group_id = sgso.getGroup_id();
+        this.group_percentage_exp_id = sgso.getGroup_exp_id();
+        this.group_percentage_exp_name = sgso.getGroup_exp_name();
         this.group_name = sgso.getGroup_name();
         this.percentage = sgso.getPercentage();
         setSdkStrategy(sdkGroupStrategyOriginList, sdkConfMap);

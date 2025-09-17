@@ -11,13 +11,16 @@ public class SdkStrategyTarget {
     private Map<String, InExCludeConf> system_direct;
 
     public SdkStrategyTarget(SdkGroupStrategyOrigin sgso) {
-        setSystemDirect(sgso.getApp_version(), sgso.getSdk_version());
+        setSystemDirect(sgso);
     }
 
-    private void setSystemDirect(String app_ver, String sdk_ver) {
+    private void setSystemDirect(SdkGroupStrategyOrigin sgso) {
         this.system_direct = new HashMap<>();
-        this.system_direct.put("app_version", getVersionConf(app_ver));
-        this.system_direct.put("sdk_version", getVersionConf(sdk_ver));
+        this.system_direct.put("app_version", getVersionConf(sgso.getApp_version()));
+        this.system_direct.put("sdk_version", getVersionConf(sgso.getSdk_version()));
+        this.system_direct.put("location", getInExcludeConf(sgso.getLocation_list()));
+        this.system_direct.put("make", getInExcludeConf(sgso.getMake_list()));
+        this.system_direct.put("osv", getInExcludeConf(sgso.getOsv_list()));
     }
 
     private InExCludeConf getVersionConf(String version) {
@@ -33,6 +36,18 @@ public class SdkStrategyTarget {
             return new InExCludeConf(new ArrayList<>(), Arrays.asList(version.replace("!", "").split(",")));
         } else {
             return new InExCludeConf(Arrays.asList(version.split(",")), new ArrayList<>());
+        }
+    }
+
+    private InExCludeConf getInExcludeConf(String directInfo) {
+        if (StringUtils.isBlank(directInfo)) {
+            return null;
+        }
+
+        if (directInfo.startsWith("!")) {
+            return new InExCludeConf(new ArrayList<>(), Arrays.asList(directInfo.replace("!", "").split(",")));
+        } else {
+            return new InExCludeConf(Arrays.asList(directInfo.split(",")), new ArrayList<>());
         }
     }
 }
