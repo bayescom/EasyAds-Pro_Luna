@@ -21,14 +21,17 @@ public class SdkStrategy implements Comparable<SdkStrategy> {
     private String strategy_name;
     private int priority;
     private SdkStrategyTarget target_info;
-    private List<Sdk> suppliers;
+    private List<SdkStrategyPercentage> strategyPercentageList;
 
-    public SdkStrategy(SdkGroupStrategyOrigin sgso, Map<String, Sdk> sdkConfMap) {
-        this.strategy_id = sgso.getStrategy_id();
+    public SdkStrategy(int strategy_id,
+                       List<SdkGroupStrategyOrigin> sdkGroupStrategyOriginList,
+                       Map<String, Sdk> sdkConfMap) {
+        this.strategy_id = strategy_id;
+        SdkGroupStrategyOrigin sgso = sdkGroupStrategyOriginList.get(0);
         this.strategy_name = sgso.getStrategy_name();
         this.priority = sgso.getPriority();
         this.target_info = new SdkStrategyTarget(sgso);
-        setSuppliersInfo(sgso, sdkConfMap);
+        setStrategyPercentageListInfo(sdkGroupStrategyOriginList, sdkConfMap);
     }
 
     @Override
@@ -36,23 +39,12 @@ public class SdkStrategy implements Comparable<SdkStrategy> {
         return Integer.compare(this.getPriority(), ss.getPriority());
     }
 
-    private void setSuppliersInfo(SdkGroupStrategyOrigin sgso, Map<String, Sdk> sdkConfMap) {
-        this.suppliers = new ArrayList<>();
-        Map<Integer, Pair<Integer, Integer>> supplierPriorityMap = sgso.getSupplierPriorityMap();
-        for(Map.Entry<Integer, Pair<Integer,Integer>> entry : supplierPriorityMap.entrySet()) {
-            int supplier_id = entry.getKey();
-            Pair<Integer, Integer> priorityPair = entry.getValue();
-            int priority = priorityPair.getKey();
-            int index = priorityPair.getValue();
-            Sdk sdk = sdkConfMap.get(String.valueOf(supplier_id));
-            if(null != sdk) {
-                Sdk sdkCopy = cloner.deepClone(sdk);
-                String supplier_key = sgso.getAdspot_id() + "_" + supplier_id;
-                sdkCopy.setSupplier_key(Base64.getEncoder().encodeToString(supplier_key.getBytes()));
-                sdkCopy.setPriority(String.valueOf(priority));
-                sdkCopy.setIndex(String.valueOf(index));
-                this.suppliers.add(sdkCopy);
-            }
+    private void setStrategyPercentageListInfo(List<SdkGroupStrategyOrigin> sdkGroupStrategyOriginList,
+                                               Map<String, Sdk> sdkConfMap) {
+        this.strategyPercentageList = new ArrayList<>();
+        for(SdkGroupStrategyOrigin sgso : sdkGroupStrategyOriginList) {
+            SdkStrategyPercentage strategyPercentage = new SdkStrategyPercentage(sgso, sdkConfMap);
+            this.strategyPercentageList.add(strategyPercentage);
         }
     }
 }
