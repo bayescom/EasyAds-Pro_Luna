@@ -18,22 +18,25 @@ public class SdkFlowGroup {
     private int percentage;
     private List<SdkStrategy> strategy;
 
-    public SdkFlowGroup(List<SdkGroupStrategyOrigin> sdkGroupStrategyOriginList,
+    public SdkFlowGroup(int group_id,
+                        Map<Integer, List<SdkGroupStrategyOrigin>> sdkGroupStrategyOriginMap,
                         Map<String, Sdk> sdkConfMap) {
-        SdkGroupStrategyOrigin sgso = sdkGroupStrategyOriginList.get(0);
-        this.group_id = sgso.getGroup_id();
+        SdkGroupStrategyOrigin sgso = sdkGroupStrategyOriginMap.values().iterator().next().get(0);
+        this.group_id = group_id;
         this.group_percentage_exp_id = sgso.getGroup_exp_id();
         this.group_percentage_exp_name = sgso.getGroup_exp_name();
         this.group_name = sgso.getGroup_name();
         this.percentage = sgso.getPercentage();
-        setSdkStrategy(sdkGroupStrategyOriginList, sdkConfMap);
+        setSdkStrategy(sdkGroupStrategyOriginMap, sdkConfMap);
     }
 
-    private void setSdkStrategy(List<SdkGroupStrategyOrigin> sdkGroupStrategyOriginList,
+    private void setSdkStrategy(Map<Integer, List<SdkGroupStrategyOrigin>> sdkGroupStrategyOriginMap,
                                 Map<String, Sdk> sdkConfMap) {
         this.strategy = new ArrayList<>();
-        for(SdkGroupStrategyOrigin sgso : sdkGroupStrategyOriginList) {
-            SdkStrategy sdkStrategy = new SdkStrategy(sgso, sdkConfMap);
+        for(Map.Entry<Integer, List<SdkGroupStrategyOrigin>> entry : sdkGroupStrategyOriginMap.entrySet()) {
+            List<SdkGroupStrategyOrigin> sdkGroupStrategyOriginList = entry.getValue();
+            int strategy_id = sdkGroupStrategyOriginList.get(0).getStrategy_id();
+            SdkStrategy sdkStrategy = new SdkStrategy(strategy_id, sdkGroupStrategyOriginList, sdkConfMap);
             this.strategy.add(sdkStrategy);
         }
         Collections.sort(this.strategy);

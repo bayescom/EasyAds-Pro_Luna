@@ -87,35 +87,45 @@ public class EasyAdsConfExportTask implements CommandLineRunner {
 
     private Map<String, List<SdkFlowGroup>> getSdkAdspotTrafficMap(List<SdkGroupStrategyOrigin> sdkGroupStrategyOriginList,
                                                                    Map<String, Sdk> sdkConfMap) {
-        // 对sdk分发策略进行遍历，然后输出到一个相对负责的Map结构
-        // 这个Map结构的 第一个key为广告位id，第二个key为流量分组id，第二个value为多流量策略列表
-        Map<Integer, Map<Integer, List<SdkGroupStrategyOrigin>>> sdkAdspotGroupStrategyMap = new HashMap<>();
+        // 对sdk分发策略进行遍历，然后输出到一个相对复杂的Map结构
+        // 这个Map结构的 第一个key为广告位id，第二个key为流量分组id，第三个key为流量策略id，第三个value为流量策略的分组列表
+        Map<Integer, Map<Integer, Map<Integer, List<SdkGroupStrategyOrigin>>>> sdkAdspotGroupStrategyMap = new HashMap<>();
         for(SdkGroupStrategyOrigin sgso : sdkGroupStrategyOriginList) {
             int adspot_id = sgso.getAdspot_id();
             int group_id = sgso.getGroup_id();
-            Map<Integer, List<SdkGroupStrategyOrigin>> groupStrategyMap = sdkAdspotGroupStrategyMap.get(adspot_id);
+            int strategy_id = sgso.getStrategy_id();
+            Map<Integer, Map<Integer, List<SdkGroupStrategyOrigin>>> groupStrategyMap = sdkAdspotGroupStrategyMap.get(adspot_id);
             if(MapUtils.isEmpty(groupStrategyMap)) {
                 List<SdkGroupStrategyOrigin> strategySdkList = new ArrayList() {{ add(sgso); }};
-                groupStrategyMap = new HashMap() {{ put(group_id, strategySdkList); }};
+                Map<Integer, List<SdkGroupStrategyOrigin>> strategyMap = new HashMap() {{ put(strategy_id, strategySdkList); }};
+                groupStrategyMap = new HashMap() {{ put(group_id, strategyMap); }};
                 sdkAdspotGroupStrategyMap.put(adspot_id, groupStrategyMap);
                 continue;
             }
 
-            List<SdkGroupStrategyOrigin> strategySdkList = groupStrategyMap.get(group_id);
+            Map<Integer,List<SdkGroupStrategyOrigin>> strategyMap = groupStrategyMap.get(group_id);
+            if(MapUtils.isEmpty(strategyMap)) {
+                List<SdkGroupStrategyOrigin> strategySdkList = new ArrayList() {{ add(sgso); }};
+                strategyMap = new HashMap() {{ put(strategy_id, strategySdkList); }};
+                groupStrategyMap.put(group_id, strategyMap);
+                continue;
+            }
+
+            List<SdkGroupStrategyOrigin> strategySdkList = strategyMap.get(strategy_id);
             if(CollectionUtils.isEmpty(strategySdkList)) {
                 strategySdkList = new ArrayList();
-                groupStrategyMap.put(group_id, strategySdkList);
+                strategyMap.put(strategy_id, strategySdkList);
             }
             strategySdkList.add(sgso);
         }
 
         // 重新遍历分组好的Map结构，生成最终的流量分组+策略的SDK列表结果存储到Map结构中，key为广告位id
         Map<String, List<SdkFlowGroup>> sdkAdspotFlowMap = new HashMap<>();
-        for(Map.Entry<Integer, Map<Integer, List<SdkGroupStrategyOrigin>>> entry : sdkAdspotGroupStrategyMap.entrySet()) {
+        for(Map.Entry<Integer, Map<Integer, Map<Integer, List<SdkGroupStrategyOrigin>>>> entry : sdkAdspotGroupStrategyMap.entrySet()) {
             int adspot_id = entry.getKey();
             List<SdkFlowGroup> sdkFlowGroupList = new ArrayList<>();
-            for(Map.Entry<Integer, List<SdkGroupStrategyOrigin>> groupEntry: entry.getValue().entrySet()) {
-                SdkFlowGroup sfg = new SdkFlowGroup(groupEntry.getValue(), sdkConfMap);
+            for(Map.Entry<Integer, Map<Integer, List<SdkGroupStrategyOrigin>>> groupEntry: entry.getValue().entrySet()) {
+                SdkFlowGroup sfg = new SdkFlowGroup(groupEntry.getKey(), groupEntry.getValue(), sdkConfMap);
                 if(sfg.getPercentage() > 0) { // 只有大于0的流量分组才记录
                     sdkFlowGroupList.add(sfg);
                 }
