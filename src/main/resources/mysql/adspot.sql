@@ -14,6 +14,7 @@ CREATE TABLE `adspot` (
   `device_daily_imp_limit` bigint(20) DEFAULT NULL COMMENT '单日单设备曝光上限',
   `device_req_interval` int(11) DEFAULT NULL COMMENT '设备请求频控',
   `timeout` int(11) NOT NULL DEFAULT '5000' COMMENT '广告位超时时间，默认5000毫秒',
+  `special_settings` text COMMENT '广告位特殊属性设置',
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
   `closed_at` datetime DEFAULT NULL COMMENT '关闭时间',
   `mark_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '软删除',
