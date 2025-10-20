@@ -5,6 +5,8 @@
     <resultMap id = "sdkAdspotPropertyMap" type = "com.easyads.export.model.format.SdkAdspotProperty">
         <result property = "adspotid" column = "adspotid" />
         <result property = "appid" column = "appid" />
+        <result property = "property" column = "special_settings" typeHandler = "com.easyads.component.mybatis.JsonTypeHandler" />
+
         <association property = "requestLimit" javaType = "com.easyads.export.model.format.AdspotRequestLimit">
             <result property = "device_daily_req_limit" column = "device_daily_req_limit" />
             <result property = "device_daily_imp_limit" column = "device_daily_imp_limit" />
@@ -18,7 +20,8 @@
             B.id AS appid,
             A.device_daily_req_limit,
             A.device_daily_imp_limit,
-            A.device_req_interval
+            A.device_req_interval,
+            IF(TRIM(A.special_settings) = '', '{}', A.special_settings) AS special_settings
         FROM adspot A
         JOIN media B ON A.media_id = B.id
         WHERE
