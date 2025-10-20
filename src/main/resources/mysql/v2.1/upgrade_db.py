@@ -5,7 +5,7 @@ import os
 
 SQL_FILE = "update_sql.sql"
 # ===================== 读取配置 =====================
-CONFIG_FILE = "../v2.1/config.json"
+CONFIG_FILE = "config.json"
 
 if not os.path.exists(CONFIG_FILE):
     print(f"配置文件 {CONFIG_FILE} 不存在！")
