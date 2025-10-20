@@ -1,5 +1,7 @@
 package com.easyads.management.adspot.model;
 
+import com.easyads.component.utils.JsonUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 @Data
@@ -21,4 +23,6 @@ public class Adspot {
     private Integer deviceReqInterval;
     /*广告位超时时间*/
     private Integer timeout;
+    /*广告位属性信息*/
+    private AdspotProperty property;
 }

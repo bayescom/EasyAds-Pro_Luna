@@ -43,6 +43,7 @@
         <result property = "deviceDailyReqLimit" column = "device_daily_req_limit" />
         <result property = "deviceDailyImpLimit" column = "device_daily_imp_limit" />
         <result property = "deviceReqInterval" column = "device_req_interval" />
+        <result property = "property" column = "special_settings" typeHandler = "com.easyads.component.mybatis.JsonTypeHandler" />
     </resultMap>
 
     <select id = "getAdspotList" resultMap = "adspotMap"
@@ -60,7 +61,8 @@
             A.timeout,
             A.device_daily_req_limit,
             A.device_daily_imp_limit,
-            A.device_req_interval
+            A.device_req_interval,
+            IF(TRIM(A.special_settings) = '', '{}', A.special_settings) AS special_settings
         FROM adspot A
         LEFT OUTER JOIN media B ON A.media_id = B.id
         LEFT OUTER JOIN
@@ -112,7 +114,8 @@
             A.timeout,
             A.device_daily_req_limit,
             A.device_daily_imp_limit,
-            A.device_req_interval
+            A.device_req_interval,
+            IF(TRIM(A.special_settings) = '', '{}', A.special_settings) AS special_settings
         FROM adspot A
         LEFT OUTER JOIN media B ON A.media_id = B.id
         LEFT OUTER JOIN
@@ -126,10 +129,12 @@
 
     <insert id = "createOneAdspot" useGeneratedKeys = "true" keyProperty = "id" keyColumn = "id">
         INSERT INTO adspot
-            (adspot_name, adspot_type, media_id, timeout, status, mark_delete, device_daily_req_limit, device_daily_imp_limit, device_req_interval)
+            (adspot_name, adspot_type, media_id, timeout, status, mark_delete, device_daily_req_limit, device_daily_imp_limit, device_req_interval,
+            special_settings)
         VALUES
             (#{adspotName}, #{adspotType}, #{mediaId}, #{timeout}, 1, 0,
-            #{deviceDailyReqLimit}, #{deviceDailyImpLimit}, #{deviceReqInterval})
+            #{deviceDailyReqLimit}, #{deviceDailyImpLimit}, #{deviceReqInterval},
+            #{property, typeHandler=com.easyads.component.mybatis.JsonTypeHandler})
     </insert>
 
     <update id = "updateOneAdspot">
@@ -139,6 +144,7 @@
             device_daily_req_limit = #{adspot.deviceDailyReqLimit},
             device_daily_imp_limit = #{adspot.deviceDailyImpLimit},
             device_req_interval = #{adspot.deviceReqInterval},
+            special_settings = #{adspot.property, typeHandler=com.easyads.component.mybatis.JsonTypeHandler},
             <choose>
                 <when test="adspot.status == 0">
                     status = #{adspot.status}, closed_at = CURRENT_TIMESTAMP
