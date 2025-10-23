@@ -1,11 +1,13 @@
 package com.easyads.export.model.format;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
 @Getter
+@NoArgsConstructor
 public class InExCludeConf {
     String larger = StringUtils.EMPTY;
     String smaller = StringUtils.EMPTY;

@@ -29,13 +29,28 @@ public class SdkStrategyTarget {
         }
 
         if (version.startsWith(">=")) {
-            return new InExCludeConf(version.replace(">=", ""), StringUtils.EMPTY, new ArrayList<>(), new ArrayList<>());
+            String versionInfo = version.replace(">=", StringUtils.EMPTY);
+            if(StringUtils.isBlank(versionInfo)) {
+                return new InExCludeConf();
+            } else {
+                return new InExCludeConf(versionInfo, StringUtils.EMPTY, new ArrayList<>(), new ArrayList<>());
+            }
         } else if (version.startsWith("<=")) {
-            return new InExCludeConf(StringUtils.EMPTY, version.replace("<=", ""), new ArrayList<>(), new ArrayList<>());
+            String versionInfo = version.replace("<=", StringUtils.EMPTY);
+            if(StringUtils.isBlank(versionInfo)) {
+                return new InExCludeConf();
+            } else {
+                return new InExCludeConf(StringUtils.EMPTY, versionInfo, new ArrayList<>(), new ArrayList<>());
+            }
         } else if (version.startsWith("!")) {
-            return new InExCludeConf(new ArrayList<>(), Arrays.asList(version.replace("!", "").split(",")));
+            String versionInfo = version.replace("!", StringUtils.EMPTY);
+            if(StringUtils.isBlank(versionInfo)) {
+                return new InExCludeConf();
+            } else {
+                return new InExCludeConf(new ArrayList<>(), Arrays.asList(versionInfo.split(",")));
+            }
         } else {
-            return new InExCludeConf(Arrays.asList(version.split(",")), new ArrayList<>());
+           return new InExCludeConf(Arrays.asList(version.split(",")), new ArrayList<>());
         }
     }
 
@@ -45,7 +60,12 @@ public class SdkStrategyTarget {
         }
 
         if (directInfo.startsWith("!")) {
-            return new InExCludeConf(new ArrayList<>(), Arrays.asList(directInfo.replace("!", "").split(",")));
+            String directInfoNew = directInfo.replace("!", StringUtils.EMPTY);
+            if(StringUtils.isBlank(directInfoNew)) {
+                return new InExCludeConf();
+            } else {
+                return new InExCludeConf(new ArrayList<>(), Arrays.asList(directInfoNew.split(",")));
+            }
         } else {
             return new InExCludeConf(Arrays.asList(directInfo.split(",")), new ArrayList<>());
         }
