@@ -1,0 +1,7 @@
+{
+  "host": "${MYSQL_URL}",
+  "user": "${MYSQL_USER}",
+  "password": "${MYSQL_USER}",
+  "database": "easyads",
+  "port": ${MYSQL_PORT}
+}
