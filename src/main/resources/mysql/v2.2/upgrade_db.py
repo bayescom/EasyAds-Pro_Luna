@@ -48,11 +48,11 @@ def check_update():
 
         # 字符串版本号转换为数字
         version_num = float(str(current_version).lstrip('v'))
-        if version_num >= 2.1:
-            print("版本 >= 2.1，无需升级")
+        if version_num >= 2.2:
+            print("版本 >= 2.2，无需升级")
             return 0
         else:
-            print("版本 < 2.1，需要升级")
+            print("版本 < 2.2，需要升级")
             return 1
     except Exception as e:
         print("检查版本失败:", e)
