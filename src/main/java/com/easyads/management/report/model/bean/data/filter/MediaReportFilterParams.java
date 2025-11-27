@@ -5,10 +5,7 @@ import com.easyads.component.utils.SystemUtils;
 import com.easyads.component.utils.TimeUtils;
 import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MediaReportFilterParams {
     public Map<String, Object> queryParams;
@@ -139,7 +136,10 @@ public class MediaReportFilterParams {
         }
 
         // 补充设置select groupby 的 dimension
-        this.hasChannelDimension = CollectionUtils.isNotEmpty(this.channelIds);
+        // 如果维度选了广告网络/广告源，或者查询条件里面有广告网络/广告源，就查分广告源维度的数据
+        this.hasChannelDimension = !Collections.disjoint(List.of("channelId", "sdkAdspotId"), dimensions)
+                || CollectionUtils.isNotEmpty(this.channelIds)
+                || CollectionUtils.isNotEmpty(this.sdkAdspotIds);
         for(String dim : dimensions) {
             String dimensionUnderlineName;
             dimensionUnderlineName = DataStringUtils.camel2underline(dim);
