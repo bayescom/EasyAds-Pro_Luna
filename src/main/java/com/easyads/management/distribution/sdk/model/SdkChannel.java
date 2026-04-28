@@ -22,6 +22,8 @@ public class SdkChannel {
     private String channelAlias;
     private Float bidPrice;
     private Integer isHeadBidding;
+    private Integer enableCache;
+    private Integer cacheTimeout;
     private Float bidRatio;
     private int timeout;
     private List<ParamMeta> adnParamsMeta;
@@ -92,6 +94,22 @@ public class SdkChannel {
 
     public void setIsHeadBidding(Integer isHeadBidding) {
         this.isHeadBidding = isHeadBidding;
+    }
+
+    public Integer getEnableCache() {
+        return enableCache;
+    }
+
+    public void setEnableCache(Integer enableCache) {
+        this.enableCache = enableCache;
+    }
+
+    public Integer getCacheTimeout() {
+        return cacheTimeout;
+    }
+
+    public void setCacheTimeout(Integer cacheTimeout) {
+        this.cacheTimeout = cacheTimeout;
     }
 
     public Float getBidRatio() {
