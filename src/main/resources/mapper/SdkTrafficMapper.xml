@@ -220,29 +220,21 @@
             A.id,
             D.platform_type,
             D.id AS media_id,
-            D.chinese_name AS media_name,
-            D.media_icon,
+            D.media_name AS media_name,
             C.id AS adspot_id,
             C.adspot_name,
-            C.layout AS adspot_type,
+            C.adspot_type,
             A.group_tag,
             A.sdk_group_id,
             A.sdk_group_percentage_id,
             A.sdk_group_targeting_id,
             A.sdk_group_targeting_percentage_id,
-            A.report_channel_id,
-            IF(COALESCE(A.name, "") = "", B.name, A.name) AS sdk_channel_name,
+            B.id AS supplier_id,
+            IF(COALESCE(A.name, "") = "", B.adn_name, A.name) AS sdk_channel_name,
             A.name AS sdk_channel_alias,
-            B.icon AS sdk_channel_icon,
-            A.price,
             A.executeStatus AS status,
             A.is_auto_create,
-            B.meta_app_id, B.meta_app_id_name,
-            B.meta_app_key, B.meta_app_key_name,
-            B.meta_adspot_id, B.meta_adspot_id_name,
-            B.meta_pub_id, B.meta_pub_id_name,
-            B.meta_pub_domain, B.meta_pub_domain_name,
-            B.meta_loid, B.meta_loid_name,
+            A.supplier_params,
             A.is_head_bidding,
             A.bid_ratio,
             A.location_list,
@@ -258,7 +250,6 @@
         (
             SELECT
                 M.*,
-                T.id AS report_channel_id,
                 N.id AS sdk_group_id,
                 N.sdk_group_percentage_id,
                 N.sdk_group_targeting_id,
@@ -274,7 +265,7 @@
                 SELECT *
                 FROM adspot_sdk_channel
                 WHERE
-                    supplier_id = #{x}
+                    adn_id = #{channelId}
                     AND mark_delete = 0
             ) M
             JOIN sdk_group N ON M.adspot_id = N.adspot_id
@@ -302,13 +293,13 @@
             </if>
             <if test = "searchText != null">
                 AND (C.id = #{searchText} OR C.adspot_name rlike #{searchText}
-                    OR A.name rlike #{searchText} OR B.name rlike #{searchText}
+                    OR A.name rlike #{searchText} OR B.adn_name rlike #{searchText}
                     OR B.meta_app_id rlike #{searchText} OR B.meta_app_key rlike #{searchText}
                     OR B.meta_adspot_id rlike #{searchText} OR B.meta_pub_id rlike #{searchText}
                     OR B.meta_pub_domain rlike #{searchText} OR B.meta_loid rlike #{searchText})
             </if>
             <if test="adspotTypes != null and adspotTypes.size() != 0">
-                AND C.layout in
+                AND C.adspot_type in
                 <foreach collection = "adspotTypes" item = "item" separator = "," open = "(" close = ")">
                     #{item}
                 </foreach>

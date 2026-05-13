@@ -42,19 +42,18 @@ public class SdkAdnTrafficService {
             Long endTime = queryParams.containsKey("endTime") ? Long.parseLong((String) queryParams.get("endTime")) : null;
             // 获取渠道的流量数据
             List<Integer> adspotIds = sdkChannelList.stream().map(SdkChannelTrafficSummary::getAdspotId).toList();
-            String report_channel_id = String.valueOf(sdkChannelId);
-            ChannelTrafficDataFilter dataFilter = new ChannelTrafficDataFilter(Integer.valueOf(report_channel_id), adspotIds, beginTime, endTime);
-//            Map<String, SdkData> sdkChannelData = mediaReportMapper.getOneChannelMetaAdspotSdkTrafficData(dataFilter);
-//            for (SdkChannelTrafficSummary sdkChannel : sdkChannelList) {
-//                String sdkReportChannelId = sdkChannel.getReportChannelId() + "_" + sdkChannel.getSdkChannelParams().get("meta_adspot_id");
-//                SdkData sdkData = sdkChannelData.get(sdkReportChannelId);
-//                if (null != sdkData) {
-//                    sdkData.completeIndicator();
-//                    sdkChannel.setData(sdkData);
-//                } else {
-//                    sdkChannel.setData(new SdkData());
-//                }
-//            }
+            ChannelTrafficDataFilter dataFilter = new ChannelTrafficDataFilter((int) sdkChannelId, adspotIds, beginTime, endTime);
+            Map<String, SdkData> sdkChannelData = mediaReportMapper.getOneChannelMetaAdspotSdkTrafficData(dataFilter);
+            for (SdkChannelTrafficSummary sdkChannel : sdkChannelList) {
+                String sdkReportChannelId = sdkChannel.getSdkChannelId() + "_" + sdkChannel.getSdkChannelParams().getAdspotId();
+                SdkData sdkData = sdkChannelData.get(sdkReportChannelId);
+                if (null != sdkData) {
+                    sdkData.completeIndicator();
+                    sdkChannel.setData(sdkData);
+                } else {
+                    sdkChannel.setData(new SdkData());
+                }
+            }
         }
 
 

@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SdkConfig {
-    private Long layerId;
     private Integer isHeadBidding;
     private Float bidRatio;
-    private Integer enableCache;
-    private Integer cacheTimeout;
 }

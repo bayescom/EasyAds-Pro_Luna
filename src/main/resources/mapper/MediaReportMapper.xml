@@ -455,7 +455,7 @@
     </select>
 
     <!-- 广告网络数据 -->
-    <sql id = "getMediaSdkDaily">
+    <sql id = "getSdkChannelDataDaily">
         SELECT
             <choose>
                 <when test = "adspotId != null">
@@ -485,7 +485,7 @@
         GROUP BY 1
     </sql>
 
-    <sql id = "getMediaSdkHourly">
+    <sql id = "getSdkChannelDataHourly">
         SELECT
             <choose>
                 <when test = "adspotId != null">
@@ -533,7 +533,7 @@
         FROM
         (
             <if test = "dailyBeginTime != null and dailyEndTime != null">
-                <include refid="getMediaSdkDaily"/>
+                <include refid="getSdkChannelDataDaily"/>
             </if>
 
             <if test = "dailyBeginTime != null and dailyEndTime != null and hourlyBeginTime != null and hourlyEndTime != null">
@@ -541,9 +541,100 @@
             </if>
 
             <if test = "hourlyBeginTime != null and hourlyEndTime != null">
-                <include refid="getMediaSdkHourly"/>
+                <include refid="getSdkChannelDataHourly"/>
             </if>
         ) MEDIA_SDK
+        GROUP BY 1
+    </select>
+
+    <!-- sdk广告源数据 -->
+    <sql id = "getSdkChannelTrafficDataDaily">
+        SELECT
+            CONCAT(channel_id, '_', sdk_adspot_id) AS sdkChannelId,
+            sum(reqs) as req,
+            sum(bids) AS bid,
+            sum(wins) AS bidWin,
+            sum(shows) AS imp,
+            sum(clicks) AS click,
+            ROUND(sum(income), 2) AS income,
+            sum(report_api_req) AS thirdReq,
+            sum(report_api_bid) AS thirdBid,
+            sum(report_api_imp) AS thirdImp,
+            sum(report_api_click) AS thirdClick,
+            round(sum(report_api_income), 2) AS thirdIncome
+        FROM report_daily
+        WHERE
+            timestamp BETWEEN #{dailyBeginTime} AND #{dailyEndTime}
+            <if test = "channelId != null">
+                AND channel_id = #{channelId}
+            </if>
+            <if test="adspotIds != null and adspotIds.size() != 0">
+                AND adspot_id IN
+                <foreach collection="adspotIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        GROUP BY 1
+    </sql>
+
+    <sql id = "getSdkChannelTrafficDataHourly">
+        SELECT
+            CONCAT(channel_id, '_', sdk_adspot_id) AS sdkChannelId,
+            sum(reqs) as req,
+            sum(bids) AS bid,
+            sum(wins) AS bidWin,
+            sum(shows) AS imp,
+            sum(clicks) AS click,
+            ROUND(sum(income), 2) AS income,
+            0 AS thirdReq,
+            0 AS thirdBid,
+            0 AS thirdImp,
+            0 AS thirdClick,
+            0 AS thirdIncome
+        FROM report_hourly
+        WHERE
+            timestamp BETWEEN #{hourlyBeginTime} AND #{hourlyEndTime}
+            <if test = "channelId != null">
+                AND channel_id = #{channelId}
+            </if>
+            <if test="adspotIds != null and adspotIds.size() != 0">
+                AND adspot_id IN
+                <foreach collection="adspotIds" item="item" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        GROUP BY 1
+    </sql>
+
+    <select id="getOneChannelMetaAdspotSdkTrafficData" parameterType = "com.easyads.management.adn.model.data.ChannelDataFilter"
+            resultType = "com.easyads.management.adn.model.data.SdkData">
+        SELECT
+            MEDIA_SDK.sdkChannelId,
+            sum(MEDIA_SDK.req) as req,
+            sum(MEDIA_SDK.bid) AS bid,
+            sum(MEDIA_SDK.bidWin) AS bidWin,
+            sum(MEDIA_SDK.imp) AS imp,
+            sum(MEDIA_SDK.click) AS click,
+            ROUND(sum(MEDIA_SDK.income), 2) AS income,
+            sum(MEDIA_SDK.thirdReq) AS thirdReq,
+            sum(MEDIA_SDK.thirdBid) AS thirdBid,
+            sum(MEDIA_SDK.thirdImp) AS thirdImp,
+            sum(MEDIA_SDK.thirdClick) AS thirdClick,
+            sum(MEDIA_SDK.thirdIncome) AS thirdIncome
+        FROM
+            (
+            <if test = "dailyBeginTime != null and dailyEndTime != null">
+                <include refid="getSdkChannelTrafficDataDaily"/>
+            </if>
+
+            <if test = "dailyBeginTime != null and dailyEndTime != null and hourlyBeginTime != null and hourlyEndTime != null">
+                UNION ALL
+            </if>
+
+            <if test = "hourlyBeginTime != null and hourlyEndTime != null">
+                <include refid="getSdkChannelTrafficDataHourly"/>
+            </if>
+            ) MEDIA_SDK
         GROUP BY 1
     </select>
 </mapper>
