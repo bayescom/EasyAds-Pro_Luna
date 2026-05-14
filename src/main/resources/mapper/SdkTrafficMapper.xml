@@ -294,9 +294,7 @@
             <if test = "searchText != null">
                 AND (C.id = #{searchText} OR C.adspot_name rlike #{searchText}
                     OR A.name rlike #{searchText} OR B.adn_name rlike #{searchText}
-                    OR B.meta_app_id rlike #{searchText} OR B.meta_app_key rlike #{searchText}
-                    OR B.meta_adspot_id rlike #{searchText} OR B.meta_pub_id rlike #{searchText}
-                    OR B.meta_pub_domain rlike #{searchText} OR B.meta_loid rlike #{searchText})
+                    OR A.supplier_params rlike #{searchText})
             </if>
             <if test="adspotTypes != null and adspotTypes.size() != 0">
                 AND C.adspot_type in
