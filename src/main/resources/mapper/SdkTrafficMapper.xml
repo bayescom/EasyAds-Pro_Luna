@@ -212,4 +212,102 @@
                 #{item}
             </foreach>
     </delete>
+
+    <!-- SDK渠道信息 -->
+    <select id = "getOneSdkChannelTrafficList" resultType = "com.easyads.management.distribution.sdk.model.SdkChannelTrafficSummary"
+            parameterType = "com.easyads.management.adn.model.filter.SdkAdnTrafficFilterParams">
+        SELECT
+            A.id,
+            D.platform_type,
+            D.id AS media_id,
+            D.media_name AS media_name,
+            C.id AS adspot_id,
+            C.adspot_name,
+            C.adspot_type,
+            A.group_tag,
+            A.sdk_group_id,
+            A.sdk_group_percentage_id,
+            A.sdk_group_targeting_id,
+            A.sdk_group_targeting_percentage_id,
+            B.id AS supplier_id,
+            IF(COALESCE(A.name, "") = "", B.adn_name, A.name) AS sdk_channel_name,
+            A.name AS sdk_channel_alias,
+            A.executeStatus AS status,
+            A.is_auto_create,
+            A.supplier_params,
+            A.is_head_bidding,
+            A.bid_ratio,
+            A.location_list,
+            A.make_list,
+            A.osv_list,
+            A.app_versions,
+            A.daily_req_limit,
+            A.daily_imp_limit,
+            A.device_daily_req_limit,
+            A.device_daily_imp_limit,
+            A.device_request_interval
+        FROM
+        (
+            SELECT
+                M.*,
+                N.id AS sdk_group_id,
+                N.sdk_group_percentage_id,
+                N.sdk_group_targeting_id,
+                N.sdk_group_targeting_percentage_id,
+                CONCAT(
+                    IF(P.percentage != 100, CONCAT(P.tag, '-'), ''),
+                    Q.name,
+                    IF(R.percentage != 100, CONCAT('-', R.tag), '')
+                ) AS group_tag,
+                IF(M.status = 0, 0, IF(INSTR(N.supplier_ids, M.id) > 0, 1, 0)) AS executeStatus
+            FROM
+            (
+                SELECT *
+                FROM adspot_sdk_channel
+                WHERE
+                    adn_id = #{channelId}
+                    AND mark_delete = 0
+            ) M
+            JOIN sdk_group N ON M.adspot_id = N.adspot_id
+            JOIN sdk_group_percentage P ON N.sdk_group_percentage_id = P.id
+            JOIN sdk_group_targeting Q ON N.sdk_group_targeting_id = Q.id
+            JOIN sdk_targeting_percentage R ON N.sdk_group_targeting_percentage_id = R.id
+        ) A
+        INNER JOIN
+        (
+            SELECT *
+            FROM sdk_adn
+        ) B ON A.adn_id = B.id
+        JOIN adspot C ON A.adspot_id = C.id
+        JOIN media D ON C.media_id = D.id
+        WHERE
+            C.status = 1 AND C.mark_delete = 0
+            <if test = "status != null">
+                AND A.executeStatus = #{status}
+            </if>
+            <if test = "mediaIds != null and mediaIds.size() != 0">
+                AND D.id in
+                <foreach collection = "mediaIds" item = "item" index = "index" open = "(" separator = "," close = ")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test = "searchText != null">
+                AND (C.id = #{searchText} OR C.adspot_name rlike #{searchText}
+                    OR A.name rlike #{searchText} OR B.adn_name rlike #{searchText}
+                    OR A.supplier_params rlike #{searchText})
+            </if>
+            <if test="adspotTypes != null and adspotTypes.size() != 0">
+                AND C.adspot_type in
+                <foreach collection = "adspotTypes" item = "item" separator = "," open = "(" close = ")">
+                    #{item}
+                </foreach>
+            </if>
+    </select>
+
+    <select id = "getSdkGroupTrafficById" resultType = "com.easyads.management.distribution.sdk.model.SdkGroupTraffic">
+        SELECT id AS sdk_group_id, supplier_ids
+        FROM sdk_group
+        WHERE id = #{sdkGroupId}
+    </select>
+ 
 </mapper>

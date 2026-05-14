@@ -5,7 +5,6 @@
     <resultMap id = "sdkChannelMap" type = "com.easyads.management.distribution.sdk.model.SdkChannel">
         <id property = "id" column = "id"/>
         <result property = "adnId" column = "adn_id" />
-        <result property = "reportChannelId" column = "report_channel_id" />
         <result property = "channelName" column = "channel_name" />
         <result property = "channelAlias" column = "channel_alias" />
         <result property = "bidPrice" column = "bid_price" />
@@ -46,7 +45,6 @@
         SELECT
             A.id,
             A.adn_id,
-            B.id AS report_channel_id,
             IF(COALESCE(A.name, "") = "", B.adn_name, A.name) AS channel_name,
             A.name AS channel_alias,
             A.supplier_params,
@@ -115,7 +113,6 @@
         SELECT
             A.id,
             A.adn_id,
-            B.id AS report_channel_id,
             IF(COALESCE(A.name, "") = "", B.adn_name, A.name) AS channel_name,
             A.name AS channel_alias,
             A.supplier_params,

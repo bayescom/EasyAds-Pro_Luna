@@ -1,6 +1,7 @@
 package com.easyads.component.mapper;
 
 import com.easyads.management.adn.model.data.ChannelDataFilter;
+import com.easyads.management.adn.model.data.ChannelTrafficDataFilter;
 import com.easyads.management.adn.model.data.SdkData;
 import com.easyads.management.report.model.bean.data.entity.MediaReport;
 import com.easyads.management.report.model.bean.data.entity.MediaReportDetail;
@@ -30,4 +31,8 @@ public interface MediaReportMapper {
     // 获取广告网络的数据
     @MapKey("sdkChannelId")
     Map<String, SdkData> getSdkChannelTrafficData(ChannelDataFilter dataFilter);
+
+    // 获取单个广告网络下广告源的数据
+    @MapKey("sdkChannelId")
+    Map<String, SdkData> getOneChannelMetaAdspotSdkTrafficData(ChannelTrafficDataFilter dataFilter);
 }
