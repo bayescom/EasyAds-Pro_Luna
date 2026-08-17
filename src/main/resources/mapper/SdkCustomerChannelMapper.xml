@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyads.component.mapper.SdkCustomerChannelMapper">
+
+    <resultMap id="SdkCustomerChannelWithConfigMap" type="com.easyads.management.sdk_customer_channel.model.SdkCustomerChannel">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="osConfigs" ofType="com.easyads.management.sdk_customer_channel.model.SdkCustomerChannelConfig">
+            <result column="os_type" property="osType" javaType="java.lang.Integer"/>
+            <result column="id" property="sdkCustomerChannelId" javaType="java.lang.Integer"/>
+            <result column="config_id" property="id" javaType="java.lang.Integer"/>
+            <result column="status" property="status" javaType="java.lang.Integer"/>
+            <result column="config" property="config" javaType="java.lang.String"/>
+        </collection>
+    </resultMap>
+
+    <select id = "getSdkCustomerChannelCount" resultType = "java.lang.Integer">
+        SELECT
+            count(DISTINCT A.id)
+        FROM sdk_customer_channel A
+        LEFT JOIN sdk_customer_channel_config B ON A.id = B.sdk_customer_channel_id
+    </select>
+
+    <select id = "getSdkCustomerChannelList" resultMap = "SdkCustomerChannelWithConfigMap" parameterType="com.easyads.management.sdk_customer_channel.model.SdkCustomerChannelFilterParams">
+        SELECT
+            A.id,
+            A.name,
+            B.os_type,
+            B.id AS config_Id,
+            B.status,
+            B.config
+        FROM sdk_customer_channel A
+        LEFT JOIN sdk_customer_channel_config B ON A.id = B.sdk_customer_channel_id
+        ORDER BY A.id DESC
+        <if test="limit != null">
+            limit #{limit}
+            <if test="offset!=null">
+                offset #{offset}
+            </if>
+        </if>
+    </select>
+
+
+    <select id="getSdkCustomerChannelMetaList" resultType="com.easyads.management.sdk_customer_channel.model.SdkCustomerChannelMeta">
+        SELECT id, name,
+            meta_app_id, meta_app_id_name, meta_app_id_required,
+            meta_app_key, meta_app_key_name, meta_app_key_required,
+            meta_adspot_id, meta_adspot_id_name, meta_adspot_id_required
+        FROM sdk_customer_channel
+        ORDER BY id DESC
+    </select>
+
+    <insert id="createOneSdkCustomerChannel" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sdk_customer_channel (name)
+        VALUES (#{name})
+    </insert>
+
+    <insert id="batchInsertSdkCustomerChannelConfig">
+        INSERT INTO sdk_customer_channel_config (sdk_customer_channel_id, os_type, config, status)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.sdkCustomerChannelId}, #{item.osType}, #{item.config}, #{item.status})
+        </foreach>
+    </insert>
+
+    <select id="getOneSdkCustomerChannel" resultMap="SdkCustomerChannelWithConfigMap">
+        SELECT
+            A.id,
+            A.name,
+            B.os_type,
+            B.id AS config_id,
+            B.status,
+            B.config
+        FROM sdk_customer_channel A
+        LEFT JOIN sdk_customer_channel_config B ON A.id = B.sdk_customer_channel_id
+        WHERE A.id = #{id}
+    </select>
+
+
+    <update id="updateOneSdkCustomerChannel">
+        UPDATE sdk_customer_channel
+        SET name = #{name}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="batchUpsertSdkCustomerChannelConfig">
+        INSERT INTO sdk_customer_channel_config (sdk_customer_channel_id, os_type, config, status)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.sdkCustomerChannelId}, #{item.osType}, #{item.config}, #{item.status})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            config = VALUES(config),
+            status = VALUES(status)
+    </insert>
+
+</mapper>

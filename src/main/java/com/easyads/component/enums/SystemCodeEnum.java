@@ -14,7 +14,8 @@ public enum SystemCodeEnum {
     MAKE_DIRECTION("制造商定向", 5),
     OSV_DIRECTION("操作系统版本定向", 6),
     APPVER_DIRECTION("APP版本定向", 7),
-    SDKVER_DIRECTION("SDK版本定向", 8);
+    SDKVER_DIRECTION("SDK版本定向", 8),
+    ADAPTER_ADSPOT_TYPE("自定义SDK广告网络Adapter支持的广告位类型", 9);
 
     private String name;
     private int value;
