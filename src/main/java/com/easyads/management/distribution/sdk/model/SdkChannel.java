@@ -35,6 +35,9 @@ public class SdkChannel {
     // 因为自动创建三方广告位新增如下字段
     // 是否自动创建的
     private Integer isAutoCreate = 0;
+    // 是否自定义SDK广告网络
+    private Integer isCustom = 0;
+    private SdkConfigExtra configExtra;
     private Long cpmUpdateTime;
     private String supplierAdspotConfig = null; // 直接存储JSON字符串
 
@@ -228,6 +231,22 @@ public class SdkChannel {
 
     public void setIsAutoCreate(Integer isAutoCreate) {
         this.isAutoCreate = isAutoCreate;
+    }
+
+    public Integer getIsCustom() {
+        return isCustom;
+    }
+
+    public void setIsCustom(Integer isCustom) {
+        this.isCustom = isCustom;
+    }
+
+    public SdkConfigExtra getConfigExtra() {
+        return configExtra;
+    }
+
+    public void setConfigExtra(SdkConfigExtra configExtra) {
+        this.configExtra = configExtra;
     }
 
     public Long getCpmUpdateTime() {

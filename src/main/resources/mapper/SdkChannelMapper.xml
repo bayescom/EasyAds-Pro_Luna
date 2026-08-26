@@ -16,7 +16,12 @@
         <result property = "adnParamsMeta" column = "params_meta" typeHandler = "com.easyads.component.mybatis.JsonArrayTypeHandler" />
         <result property = "cpmUpdateTime" column = "cpm_update_time" />
         <result property = "isAutoCreate" column = "is_auto_create" />
+        <result property = "isCustom" column = "is_custom" />
         <result property = "supplierAdspotConfig" column = "supplier_adspot_config" />
+
+        <association property = "configExtra" javaType = "com.easyads.management.distribution.sdk.model.SdkConfigExtra">
+            <result property = "channelCustomParam" column = "custom_param" />
+        </association>
 
         <association property = "requestLimit" javaType = "com.easyads.management.distribution.sdk.model.SdkRequestLimit">
             <result property = "dailyReqLimit" column = "daily_req_limit" />
@@ -42,12 +47,11 @@
         </association>
     </resultMap>
 
-    <select id = "getAdspotSdkChannelList" resultMap = "sdkChannelMap">
-        SELECT
+    <sql id = "adspotSdkChannelSelectColumns">
             A.id,
             A.adn_id,
-            B.id AS report_channel_id,
-            IF(COALESCE(A.name, "") = "", B.adn_name, A.name) AS channel_name,
+            COALESCE(B.id, A.adn_id) AS report_channel_id,
+            IF(COALESCE(A.name, "") = "", COALESCE(B.adn_name, D.name), A.name) AS channel_name,
             A.name AS channel_alias,
             A.supplier_params,
             A.bid_price,
@@ -61,6 +65,8 @@
             A.device_request_interval,
             A.cpm_update_time,
             A.is_auto_create,
+            COALESCE(A.is_custom, 0) AS is_custom,
+            A.custom_param,
             A.supplier_adspot_config,
             COALESCE(A.location_list, "") AS location_list,
             COALESCE(A.make_list, "") AS make_list,
@@ -72,6 +78,28 @@
             C.params AS report_api_params,
             C.status AS report_api_params_status,
             C.auto_create_status AS report_api_auto_create_status
+    </sql>
+
+    <sql id = "adspotSdkChannelJoins">
+        LEFT OUTER JOIN
+        (
+            SELECT *
+            FROM sdk_adn
+            WHERE status = 1 AND mark_delete = 0
+        ) B ON A.adn_id = B.id AND COALESCE(A.is_custom, 0) = 0
+        LEFT OUTER JOIN sdk_customer_channel D ON A.adn_id = D.id AND A.is_custom = 1
+        LEFT OUTER JOIN
+        (
+            SELECT *
+            FROM sdk_report_api_params
+            WHERE mark_deleted = 0
+        ) C ON A.report_api_id = C.id
+        WHERE COALESCE(A.is_custom, 0) = 1 OR B.id IS NOT NULL
+    </sql>
+
+    <select id = "getAdspotSdkChannelList" resultMap = "sdkChannelMap">
+        SELECT
+            <include refid = "adspotSdkChannelSelectColumns"/>
         FROM
         (
             SELECT *
@@ -79,18 +107,7 @@
             WHERE adspot_id = #{adspotId}
             AND mark_delete = 0
         ) A
-        INNER JOIN
-        (
-            SELECT *
-            FROM sdk_adn
-            WHERE status = 1 AND mark_delete = 0
-        ) B ON A.adn_id = B.id
-        LEFT OUTER JOIN
-        (
-            SELECT *
-            FROM sdk_report_api_params
-            WHERE mark_deleted = 0
-        ) C ON A.report_api_id = C.id
+        <include refid = "adspotSdkChannelJoins"/>
     </select>
 
     <select id = "getAdspotSdkSimpleChannelMap" resultType = "com.easyads.management.distribution.traffic.model.SdkChannelSimple">
@@ -113,34 +130,7 @@
 
     <select id = "getOneAdspotSdkChannel" resultMap = "sdkChannelMap">
         SELECT
-            A.id,
-            A.adn_id,
-            B.id AS report_channel_id,
-            IF(COALESCE(A.name, "") = "", B.adn_name, A.name) AS channel_name,
-            A.name AS channel_alias,
-            A.supplier_params,
-            A.bid_price,
-            A.time_out,
-            A.is_head_bidding,
-            A.bid_ratio,
-            A.daily_req_limit,
-            A.daily_imp_limit,
-            A.device_daily_req_limit,
-            A.device_daily_imp_limit,
-            A.device_request_interval,
-            A.cpm_update_time,
-            A.is_auto_create,
-            A.supplier_adspot_config,
-            COALESCE(A.location_list, "") AS location_list,
-            COALESCE(A.make_list, "") AS make_list,
-            COALESCE(A.osv_list, "") AS osv_list,
-            COALESCE(A.app_versions, "") AS app_versions,
-            B.params_meta,
-            C.id AS report_api_id,
-            COALESCE(C.account_name, A.name) AS report_api_account_name,
-            C.params AS report_api_params,
-            C.status AS report_api_params_status,
-            C.auto_create_status AS report_api_auto_create_status
+            <include refid = "adspotSdkChannelSelectColumns"/>
         FROM
         (
             SELECT *
@@ -149,18 +139,7 @@
                 adspot_id = #{adspotId} AND id = #{sdkChannelId}
                 AND mark_delete = 0
         ) A
-        INNER JOIN
-        (
-            SELECT *
-            FROM sdk_adn
-            WHERE status = 1 AND mark_delete = 0
-        ) B ON A.adn_id = B.id
-        LEFT OUTER JOIN
-        (
-            SELECT *
-            FROM sdk_report_api_params
-            WHERE mark_deleted = 0
-        ) C ON A.report_api_id = C.id
+        <include refid = "adspotSdkChannelJoins"/>
     </select>
 
     <insert id = "createOneAdspotSdkChannel" useGeneratedKeys="true" keyProperty="sdkChannel.id">
@@ -170,19 +149,27 @@
                 daily_req_limit, daily_imp_limit,
                 device_daily_req_limit, device_daily_imp_limit, device_request_interval,
                 location_list, make_list, osv_list, app_versions,
-                cpm_update_time, is_auto_create,
+                cpm_update_time, is_auto_create, is_custom, custom_param,
                 supplier_adspot_config
             )
         VALUES
         (
-            #{adspotId}, #{sdkChannel.adnId}, #{sdkChannel.reportApiParam.id},
+            #{adspotId}, #{sdkChannel.adnId},
+            <choose>
+                <when test="sdkChannel.reportApiParam != null">#{sdkChannel.reportApiParam.id}</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
             #{sdkChannel.channelAlias}, #{sdkChannel.timeout}, #{sdkChannel.params, typeHandler = com.easyads.component.mybatis.JsonTypeHandler},
             #{sdkChannel.bidPrice}, #{sdkChannel.isHeadBidding}, #{sdkChannel.bidRatio},
             #{sdkChannel.requestLimit.dailyReqLimit}, #{sdkChannel.requestLimit.dailyImpLimit},
             #{sdkChannel.requestLimit.deviceDailyReqLimit}, #{sdkChannel.requestLimit.deviceDailyImpLimit}, #{sdkChannel.requestLimit.deviceRequestInterval},
             #{sdkChannel.directionOrigin.locationList}, #{sdkChannel.directionOrigin.makeList},
             #{sdkChannel.directionOrigin.osvList}, #{sdkChannel.directionOrigin.appVersion},
-            #{sdkChannel.cpmUpdateTime}, #{sdkChannel.isAutoCreate},
+            #{sdkChannel.cpmUpdateTime}, #{sdkChannel.isAutoCreate}, COALESCE(#{sdkChannel.isCustom}, 0),
+            <choose>
+                <when test="sdkChannel.configExtra != null">#{sdkChannel.configExtra.channelCustomParam}</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
             #{sdkChannel.supplierAdspotConfig}
         )
     </insert>
@@ -193,7 +180,10 @@
             name = #{sdkChannel.channelAlias},
             bid_price = #{sdkChannel.bidPrice},
             time_out = #{sdkChannel.timeout},
-            report_api_id = #{sdkChannel.reportApiParam.id},
+            report_api_id = <choose>
+                <when test="sdkChannel.reportApiParam != null">#{sdkChannel.reportApiParam.id}</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
             supplier_params = #{sdkChannel.params, typeHandler = com.easyads.component.mybatis.JsonTypeHandler},
             is_head_bidding = #{sdkChannel.isHeadBidding},
             bid_ratio = #{sdkChannel.bidRatio},
@@ -208,6 +198,10 @@
             app_versions = #{sdkChannel.directionOrigin.appVersion},
             is_auto_create = #{sdkChannel.isAutoCreate},
             cpm_update_time = #{sdkChannel.cpmUpdateTime},
+            custom_param = <choose>
+                <when test="sdkChannel.configExtra != null">#{sdkChannel.configExtra.channelCustomParam}</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
             supplier_adspot_config = #{sdkChannel.supplierAdspotConfig}
         WHERE
             id = #{sdkChannelId} AND adspot_id = #{adspotId}

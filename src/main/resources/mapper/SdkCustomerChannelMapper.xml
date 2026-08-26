@@ -41,13 +41,39 @@
     </select>
 
 
-    <select id="getSdkCustomerChannelMetaList" resultType="com.easyads.management.sdk_customer_channel.model.SdkCustomerChannelMeta">
-        SELECT id, name,
-            meta_app_id, meta_app_id_name, meta_app_id_required,
-            meta_app_key, meta_app_key_name, meta_app_key_required,
-            meta_adspot_id, meta_adspot_id_name, meta_adspot_id_required
+    <resultMap id="SdkCustomerChannelMetaMap" type="com.easyads.management.sdk_customer_channel.model.SdkCustomerChannelMeta">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="meta_app_id" property="metaAppId" javaType="java.lang.Integer"/>
+        <result column="meta_app_id_name" property="metaAppIdName"/>
+        <result column="meta_app_id_required" property="metaAppIdRequired" javaType="java.lang.Integer"/>
+        <result column="meta_app_key" property="metaAppKey" javaType="java.lang.Integer"/>
+        <result column="meta_app_key_name" property="metaAppKeyName"/>
+        <result column="meta_app_key_required" property="metaAppKeyRequired" javaType="java.lang.Integer"/>
+        <result column="meta_adspot_id" property="metaAdspotId" javaType="java.lang.Integer"/>
+        <result column="meta_adspot_id_name" property="metaAdspotIdName"/>
+        <result column="meta_adspot_id_required" property="metaAdspotIdRequired" javaType="java.lang.Integer"/>
+    </resultMap>
+
+    <sql id="sdkCustomerChannelMetaColumns">
+        id, name,
+        meta_app_id, meta_app_id_name, meta_app_id_required,
+        meta_app_key, meta_app_key_name, meta_app_key_required,
+        meta_adspot_id, meta_adspot_id_name, meta_adspot_id_required
+    </sql>
+
+    <select id="getSdkCustomerChannelMetaList" resultMap="SdkCustomerChannelMetaMap">
+        SELECT
+            <include refid="sdkCustomerChannelMetaColumns"/>
         FROM sdk_customer_channel
         ORDER BY id DESC
+    </select>
+
+    <select id="getSdkCustomerChannelMetaById" resultMap="SdkCustomerChannelMetaMap">
+        SELECT
+            <include refid="sdkCustomerChannelMetaColumns"/>
+        FROM sdk_customer_channel
+        WHERE id = #{id}
     </select>
 
     <insert id="createOneSdkCustomerChannel" useGeneratedKeys="true" keyProperty="id">

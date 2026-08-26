@@ -10,6 +10,7 @@ public class Adspot {
     private String adspotName;
     private Integer adspotType;
     private String adspotTypeName;
+    private Integer renderType;
     private Integer platformType;
     private Long mediaId;
     private String mediaName;

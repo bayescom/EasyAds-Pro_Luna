@@ -10,6 +10,7 @@ CREATE TABLE `adspot` (
   `adspot_name` varchar(255) NOT NULL COMMENT '广告位名称',
   `media_id` bigint(20) NOT NULL COMMENT '所属媒体id',
   `adspot_type` int(11) NOT NULL COMMENT '广告位类型',
+  `render_type` tinyint(4) DEFAULT NULL COMMENT '渲染类型',
   `device_daily_req_limit` bigint(20) DEFAULT NULL COMMENT '单日单设备请求上限',
   `device_daily_imp_limit` bigint(20) DEFAULT NULL COMMENT '单日单设备曝光上限',
   `device_req_interval` int(11) DEFAULT NULL COMMENT '设备请求频控',

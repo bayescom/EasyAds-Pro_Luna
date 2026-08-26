@@ -12,6 +12,8 @@ CREATE TABLE `adspot_sdk_channel` (
   `report_api_id` int(11) DEFAULT NULL COMMENT '关联到sdk_report_api_params的id',
   `name` varchar(255) DEFAULT NULL COMMENT '渠道的别名信息',
   `is_auto_create` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否自动创建三方广告位',
+  `is_custom` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否自定义SDK广告网络',
+  `custom_param` text COMMENT '自定义SDK渠道扩展参数',
   `supplier_params` text COMMENT '渠道参数, JSON格式',
   `time_out` int(11) DEFAULT '5000' COMMENT '超时时间',
   `daily_req_limit` int(11) DEFAULT '0' COMMENT '单日请求总上限',

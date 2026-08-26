@@ -25,4 +25,6 @@ public interface SdkCustomerChannelMapper {
 
     // 这个是上面的getSdkCustomerChannelList不同的是，他返回的是所有的字段
     List<SdkCustomerChannelMeta> getSdkCustomerChannelMetaList();
+
+    SdkCustomerChannelMeta getSdkCustomerChannelMetaById(Integer id);
 }
