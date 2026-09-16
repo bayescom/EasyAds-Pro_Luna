@@ -140,16 +140,17 @@ public class SdkAdnService {
         return summary;
     }
 
-    private int appendCustomSdkList(List<SdkAdn> sdkAdnList, SdkAdnFilterParams filterParams,
-                                    Integer adspotType, Integer platformType, Integer renderType) {
+    private List<SdkAdn> buildCustomSdkList(SdkAdnFilterParams filterParams,
+                                           Integer adspotType, Integer platformType, Integer renderType) {
+        List<SdkAdn> customAdnList = new ArrayList<>();
         // 自定义渠道当前固定 status=1，筛选未启用时不返回
         if (filterParams.status != null && filterParams.status == 0) {
-            return 0;
+            return customAdnList;
         }
 
         List<SdkCustomerChannelMeta> customSdkList = sdkCustomerChannelMapper.getSdkCustomerChannelMetaList();
         if (CollectionUtils.isEmpty(customSdkList)) {
-            return 0;
+            return customAdnList;
         }
 
         List<SdkCustomerChannel> customSdkWithConfigList =
@@ -161,7 +162,6 @@ public class SdkAdnService {
             }
         }
 
-        int customSdkCount = 0;
         for (SdkCustomerChannelMeta customSdk : customSdkList) {
             if (StringUtils.isNotBlank(filterParams.searchText)
                     && (StringUtils.isBlank(customSdk.getName()) || !customSdk.getName().contains(filterParams.searchText))) {
@@ -173,10 +173,24 @@ public class SdkAdnService {
                 continue;
             }
 
-            sdkAdnList.add(convertToSdkAdn(customSdk));
-            customSdkCount++;
+            customAdnList.add(convertToSdkAdn(customSdk));
         }
-        return customSdkCount;
+        return customAdnList;
+    }
+
+    private void fillSdkAdnTrafficData(List<SdkAdn> sdkAdnList, Map<String, SdkData> sdkChannelData) {
+        if (CollectionUtils.isEmpty(sdkAdnList)) {
+            return;
+        }
+        for (SdkAdn sdkAdn : sdkAdnList) {
+            SdkData sdkData = sdkChannelData == null ? null : sdkChannelData.get(sdkAdn.getAdnId().toString());
+            if (null != sdkData) {
+                sdkData.completeIndicator();
+                sdkAdn.setData(sdkData);
+            } else {
+                sdkAdn.setData(new SdkData());
+            }
+        }
     }
 
     public Map<String, Object> getSdkAdnlList(Map<String, Object> queryParams, Integer adspotType, Integer platformType, Integer renderType) throws BadRequestException {
@@ -189,28 +203,14 @@ public class SdkAdnService {
         int sdkChannelCount = sdkAdnMapper.getSdkAdnCount(filterParams);
         List<SdkAdn> sdkAdnList = sdkAdnMapper.getSdkAdnList(filterParams);
 
-        for(SdkAdn sdkAdn : sdkAdnList) {
-            sdkAdn.setData(new SdkData());
-        }
+        List<SdkAdn> customSdkList = buildCustomSdkList(filterParams, adspotType, platformType, renderType);
+        sdkAdnList.addAll(customSdkList);
 
-        // 获取渠道的流量数据
         ChannelDataFilter dataFilter = new ChannelDataFilter(null, filterParams.beginTime, filterParams.endTime);
         Map<String, SdkData> sdkChannelData = mediaReportMapper.getSdkChannelTrafficData(dataFilter);
+        fillSdkAdnTrafficData(sdkAdnList, sdkChannelData);
 
-        for(SdkAdn sdkAdn : sdkAdnList) {
-            SdkData sdkData = sdkChannelData.get(sdkAdn.getAdnId().toString());
-            if(null != sdkData) {
-                sdkData.completeIndicator();
-                sdkAdn.setData(sdkData);
-            } else {
-                sdkAdn.setData(new SdkData());
-            }
-        }
-
-        // 查询自定义 SDK 广告网络列表并拼接到结果中（流量数据暂不填充）
-        int customSdkCount = appendCustomSdkList(sdkAdnList, filterParams, adspotType, platformType, renderType);
-
-        ((Map) channelResult.get("meta")).put("total", sdkChannelCount + customSdkCount);
+        ((Map) channelResult.get("meta")).put("total", sdkChannelCount + customSdkList.size());
         channelResult.put("sdk_adns", sdkAdnList);
 
         return channelResult;
