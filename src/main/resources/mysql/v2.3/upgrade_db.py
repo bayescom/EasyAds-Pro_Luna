@@ -2,6 +2,8 @@
 import pymysql
 import json
 import os
+import re
+from pymysql.err import MySQLError
 
 # ===================== 读取配置 =====================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -16,6 +18,16 @@ UPGRADE_STEPS = [
     (2.2, os.path.join(BASE_DIR, "..", "v2.2", "update_sql.sql")),
     (2.3, os.path.join(BASE_DIR, "update_sql.sql")),
 ]
+
+# 已存在时允许跳过的 MySQL 错误码
+# 1060: Duplicate column / 1061: Duplicate key name
+# 1050: Table already exists / 1062: Duplicate entry
+SKIPPABLE_MYSQL_ERRORS = {
+    1050: "表已存在，跳过",
+    1060: "列已存在，跳过",
+    1061: "索引已存在，跳过",
+    1062: "数据已存在，跳过",
+}
 
 if not os.path.exists(CONFIG_FILE):
     print(f"配置文件 {CONFIG_FILE} 不存在！")
@@ -33,6 +45,65 @@ def table_exists(cursor, table):
     """, (DB_CONFIG['database'], table))
     return cursor.fetchone()[0] > 0
 
+def column_exists(cursor, table, column):
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA=%s AND TABLE_NAME=%s AND COLUMN_NAME=%s
+    """, (DB_CONFIG['database'], table, column))
+    return cursor.fetchone()[0] > 0
+
+def parse_add_column(stmt):
+    """解析 ALTER TABLE ... ADD COLUMN `col` ...，返回 (table, column) 或 None"""
+    match = re.search(
+        r"ALTER\s+TABLE\s+(?:`?(?:\w+)`?\.)?`?(\w+)`?\s+ADD\s+COLUMN\s+`?(\w+)`?",
+        stmt,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+    return match.group(1), match.group(2)
+
+def parse_table_name(stmt, keyword):
+    """解析 DROP/CREATE TABLE 语句中的表名"""
+    match = re.search(
+        rf"{keyword}\s+TABLE\s+(?:IF\s+(?:NOT\s+)?EXISTS\s+)?(?:`?(?:\w+)`?\.)?`?(\w+)`?",
+        stmt,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+    return match.group(1)
+
+def execute_statement(cursor, stmt):
+    # ADD COLUMN：列已存在则跳过
+    add_column = parse_add_column(stmt)
+    if add_column:
+        table, column = add_column
+        if column_exists(cursor, table, column):
+            print(f"  跳过: 列 {table}.{column} 已存在")
+            return
+
+    # DROP/CREATE TABLE：表已存在则跳过，避免误删已有数据
+    drop_table = parse_table_name(stmt, "DROP")
+    if drop_table and table_exists(cursor, drop_table):
+        print(f"  跳过: 表 {drop_table} 已存在，不执行 DROP")
+        return
+
+    create_table = parse_table_name(stmt, "CREATE")
+    if create_table and table_exists(cursor, create_table):
+        print(f"  跳过: 表 {create_table} 已存在，不执行 CREATE")
+        return
+
+    try:
+        cursor.execute(stmt)
+    except MySQLError as e:
+        code = e.args[0] if e.args else None
+        if code in SKIPPABLE_MYSQL_ERRORS:
+            print(f"  跳过: {SKIPPABLE_MYSQL_ERRORS[code]} ({e})")
+            return
+        raise
+
 def run_sql_file(cursor, path):
     with open(path, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -43,7 +114,7 @@ def run_sql_file(cursor, path):
         # 跳过纯块注释
         if stmt.startswith('/*') and stmt.endswith('*/'):
             continue
-        cursor.execute(stmt)
+        execute_statement(cursor, stmt)
 
 def get_current_version():
     conn = pymysql.connect(**DB_CONFIG)
