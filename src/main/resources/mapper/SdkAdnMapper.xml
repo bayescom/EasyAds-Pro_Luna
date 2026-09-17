@@ -7,7 +7,7 @@
         SELECT count(distinct A.id) AS cnt
         FROM
         (
-            SELECT id
+            SELECT id, adn_name
             FROM sdk_adn
             WHERE status = 1 AND mark_delete = 0
         ) A
@@ -28,7 +28,7 @@
                 AND IF(B.adn_id IS NULL, 0, 1) = #{status}
             </if>
             <if test="searchText != null">
-                AND (A.name rlike #{searchText})
+                AND (A.adn_name rlike #{searchText})
             </if>
     </select>
 

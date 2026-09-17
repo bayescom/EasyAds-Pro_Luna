@@ -1,5 +1,8 @@
 package com.easyads.component.mapper;
 
+import com.easyads.management.adn.model.filter.SdkAdnTrafficFilterParams;
+import com.easyads.management.distribution.sdk.model.SdkChannelTrafficSummary;
+import com.easyads.management.distribution.sdk.model.SdkGroupTraffic;
 import com.easyads.management.distribution.strategy.model.group.SdkGroupStrategy;
 import com.easyads.management.distribution.strategy.model.percentage.SdkPercentage;
 import com.easyads.management.distribution.strategy.model.target_percentage.SdkTargetPercentage;
@@ -40,4 +43,11 @@ public interface SdkTrafficMapper {
                                                List<SdkTargetPercentage> sdkTargetPercentageList,
                                                List<String> supplierTraffic);
     int deleteGroupStrategyTraffic(Set<Long> groupTargetIdList);
+
+    // SDK广告网络
+    List<SdkChannelTrafficSummary> getOneSdkChannelTrafficList(SdkAdnTrafficFilterParams filterParams);
+
+    // 获取流量分发信息
+    SdkGroupTraffic getSdkGroupTrafficById(Long sdkGroupId);
+
 }
