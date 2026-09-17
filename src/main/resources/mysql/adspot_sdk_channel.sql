@@ -28,6 +28,8 @@ CREATE TABLE `adspot_sdk_channel` (
   `bid_price` float DEFAULT NULL COMMENT '竞价价格，单位元',
   `bid_ratio` float DEFAULT '1' COMMENT '竞价系数',
   `is_head_bidding` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否竞价',
+  `enable_cache` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否开启缓存',
+  `cache_timeout` int(11) DEFAULT NULL COMMENT '缓存超时时间',
   `status` smallint(1) NOT NULL DEFAULT '1' COMMENT '开关状态 默认值1  ',
   `mark_delete` smallint(1) NOT NULL DEFAULT '0' COMMENT '标记删除，默认0  1未删除',
   `cpm_update_time` int(11) DEFAULT NULL COMMENT '自动广告位的CPM更新有效最后时间',
