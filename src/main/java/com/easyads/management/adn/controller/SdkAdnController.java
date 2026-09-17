@@ -24,9 +24,12 @@ public class SdkAdnController {
 
     @GetMapping("/adns")
     public Object getAdnList(@RequestParam Map<String, Object> queryParams,
+                             @RequestParam(value = "adspotType", required = false) Integer adspotType,
+                             @RequestParam(value = "renderType", required = false) Integer renderType,
+                             @RequestParam(value = "platformType", required = false) Integer platformType,
                              HttpServletRequest request, HttpServletResponse response) {
         try {
-            return adnChannelService.getSdkAdnlList(queryParams);
+            return adnChannelService.getSdkAdnlList(queryParams, adspotType, platformType, renderType);
         } catch (BadRequestException e) {
             response.setStatus(400);
             request.setAttribute("message", e.getMessage());

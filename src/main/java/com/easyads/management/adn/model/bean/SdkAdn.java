@@ -15,5 +15,6 @@ public class SdkAdn {
     private List<SdkAdnReportApi> reportApiParams;
     private int reportApiStatus;
     private int supportAutoCreate;
+    private int isCustom = 0;
     private SdkData data;
 }

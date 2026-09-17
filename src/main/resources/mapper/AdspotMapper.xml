@@ -34,6 +34,7 @@
         <result property = "adspotName" column = "adspot_name" />
         <result property = "adspotType" column = "adspot_type" />
         <result property = "adspotTypeName" column = "adspot_type_name" />
+        <result property = "renderType" column = "render_type" />
         <result property = "platformType" column = "platform_type" />
         <result property = "mediaId" column = "media_id" />
         <result property = "mediaName" column = "media_name" />
@@ -53,6 +54,7 @@
             A.adspot_name,
             A.adspot_type,
             C.name AS adspot_type_name,
+            A.render_type,
             B.platform_type,
             A.media_id,
             B.media_name,
@@ -106,6 +108,7 @@
             A.adspot_name,
             A.adspot_type,
             C.name AS adspot_type_name,
+            A.render_type,
             B.platform_type,
             A.media_id,
             B.media_name,
@@ -129,11 +132,11 @@
 
     <insert id = "createOneAdspot" useGeneratedKeys = "true" keyProperty = "id" keyColumn = "id">
         INSERT INTO adspot
-            (adspot_name, adspot_type, media_id, timeout, status, mark_delete,
+            (adspot_name, adspot_type, render_type, media_id, timeout, status, mark_delete,
                 device_daily_req_limit, device_daily_imp_limit, device_req_interval,
                 special_settings)
         VALUES
-            (#{adspotName}, #{adspotType}, #{mediaId}, #{timeout}, 1, 0,
+            (#{adspotName}, #{adspotType}, #{renderType}, #{mediaId}, #{timeout}, 1, 0,
             #{deviceDailyReqLimit}, #{deviceDailyImpLimit}, #{deviceReqInterval},
             #{property, typeHandler=com.easyads.component.mybatis.JsonTypeHandler})
     </insert>
@@ -141,6 +144,7 @@
     <update id = "updateOneAdspot">
         UPDATE adspot
         SET adspot_name = #{adspot.adspotName},
+            render_type = #{adspot.renderType},
             timeout = #{adspot.timeout},
             device_daily_req_limit = #{adspot.deviceDailyReqLimit},
             device_daily_imp_limit = #{adspot.deviceDailyImpLimit},
