@@ -22,11 +22,13 @@ UPGRADE_STEPS = [
 # 已存在时允许跳过的 MySQL 错误码
 # 1060: Duplicate column / 1061: Duplicate key name
 # 1050: Table already exists / 1062: Duplicate entry
+# 1091: Can't DROP; check that column/key exists
 SKIPPABLE_MYSQL_ERRORS = {
     1050: "表已存在，跳过",
     1060: "列已存在，跳过",
     1061: "索引已存在，跳过",
     1062: "数据已存在，跳过",
+    1091: "列不存在，跳过 DROP",
 }
 
 if not os.path.exists(CONFIG_FILE):
@@ -64,6 +66,17 @@ def parse_add_column(stmt):
         return None
     return match.group(1), match.group(2)
 
+def parse_drop_column(stmt):
+    """解析 ALTER TABLE ... DROP COLUMN [IF EXISTS] `col`，返回 (table, column) 或 None"""
+    match = re.search(
+        r"ALTER\s+TABLE\s+(?:`?(?:\w+)`?\.)?`?(\w+)`?\s+DROP\s+COLUMN\s+(?:IF\s+EXISTS\s+)?`?(\w+)`?",
+        stmt,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+    return match.group(1), match.group(2)
+
 def parse_table_name(stmt, keyword):
     """解析 DROP/CREATE TABLE 语句中的表名"""
     match = re.search(
@@ -76,6 +89,16 @@ def parse_table_name(stmt, keyword):
     return match.group(1)
 
 def execute_statement(cursor, stmt):
+    # DROP COLUMN：列不存在则跳过；列已存在也跳过，避免升级脚本清掉线上数据
+    drop_column = parse_drop_column(stmt)
+    if drop_column:
+        table, column = drop_column
+        if column_exists(cursor, table, column):
+            print(f"  跳过: 列 {table}.{column} 已存在，不执行 DROP，避免丢失数据")
+        else:
+            print(f"  跳过: 列 {table}.{column} 不存在，不执行 DROP")
+        return
+
     # ADD COLUMN：列已存在则跳过
     add_column = parse_add_column(stmt)
     if add_column:
