@@ -110,7 +110,8 @@ public class SdkAdnService {
                     return "template_feeds";
                 }
                 return null;
-
+            case 3:
+                return "banner";
             case 4:
                 return "interstitial";
             case 5:
@@ -123,12 +124,12 @@ public class SdkAdnService {
     /**
      * 将自定义 SDK 广告网络转换为 SdkAdn 格式
      */
-    private SdkAdn convertToSdkAdn(SdkCustomerChannelMeta customSdk) {
+    private SdkAdn convertToSdkAdn(SdkCustomerChannelMeta customSdk, int status) {
         SdkAdn summary = new SdkAdn();
 
         summary.setAdnId(customSdk.getId());
         summary.setAdnName(customSdk.getName());
-        summary.setStatus(1);
+        summary.setStatus(status);
         summary.setSupportAutoCreate(0);
         summary.setIsCustom(1);
         summary.setReportApiStatus(0);
@@ -143,14 +144,15 @@ public class SdkAdnService {
     private List<SdkAdn> buildCustomSdkList(SdkAdnFilterParams filterParams,
                                            Integer adspotType, Integer platformType, Integer renderType) {
         List<SdkAdn> customAdnList = new ArrayList<>();
-        // 自定义渠道当前固定 status=1，筛选未启用时不返回
-        if (filterParams.status != null && filterParams.status == 0) {
-            return customAdnList;
-        }
-
         List<SdkCustomerChannelMeta> customSdkList = sdkCustomerChannelMapper.getSdkCustomerChannelMetaList();
         if (CollectionUtils.isEmpty(customSdkList)) {
             return customAdnList;
+        }
+
+        Set<Integer> usedCustomSdkIdSet = new HashSet<>();
+        List<Integer> usedCustomSdkIdList = sdkAdnMapper.getUsedCustomSdkAdnIdList();
+        if (CollectionUtils.isNotEmpty(usedCustomSdkIdList)) {
+            usedCustomSdkIdSet.addAll(usedCustomSdkIdList);
         }
 
         List<SdkCustomerChannel> customSdkWithConfigList =
@@ -173,7 +175,12 @@ public class SdkAdnService {
                 continue;
             }
 
-            customAdnList.add(convertToSdkAdn(customSdk));
+            int status = usedCustomSdkIdSet.contains(customSdk.getId()) ? 1 : 0;
+            if (filterParams.status != null && !filterParams.status.equals(status)) {
+                continue;
+            }
+
+            customAdnList.add(convertToSdkAdn(customSdk, status));
         }
         return customAdnList;
     }

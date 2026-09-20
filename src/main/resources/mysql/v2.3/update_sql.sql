@@ -37,3 +37,46 @@ CREATE TABLE `sdk_customer_channel_config` (
    UNIQUE KEY `uni_key` (`sdk_customer_channel_id`,`os_type`) USING BTREE,
    KEY `idx_sdk_channel` (`sdk_customer_channel_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=191 DEFAULT CHARSET=utf8;
+
+/*
+    3. 广告位SDK渠道增加自定义标识
+*/
+ALTER TABLE `easyads`.`adspot_sdk_channel` DROP COLUMN IF EXISTS `is_custom`;
+ALTER TABLE `easyads`.`adspot_sdk_channel`
+ADD COLUMN `is_custom` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '是否自定义SDK广告网络' AFTER `is_auto_create`;
+
+ALTER TABLE `easyads`.`adspot_sdk_channel` DROP COLUMN IF EXISTS `custom_param`;
+ALTER TABLE `easyads`.`adspot_sdk_channel`
+ADD COLUMN `custom_param` TEXT NULL COMMENT '自定义SDK渠道扩展参数' AFTER `is_custom`;
+
+/*
+    4. 广告位增加渲染类型
+*/
+ALTER TABLE `easyads`.`adspot` DROP COLUMN IF EXISTS `render_type`;
+ALTER TABLE `easyads`.`adspot`
+ADD COLUMN `render_type` TINYINT(4) NULL DEFAULT NULL COMMENT '渲染类型' AFTER `adspot_type`;
+
+/*
+    5. 自定义SDK广告网络Adapter支持的广告位类型
+*/
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 9, 'banner', '横幅', NULL, NULL, 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 9 AND `value` = 'banner');
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 9, 'coopen', '开屏', NULL, NULL, 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 9 AND `value` = 'coopen');
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 9, 'custom_feeds', '自渲染信息流', NULL, NULL, 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 9 AND `value` = 'custom_feeds');
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 9, 'init', '初始化类名', NULL, NULL, 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 9 AND `value` = 'init');
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 9, 'interstitial', '插屏', NULL, NULL, 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 9 AND `value` = 'interstitial');
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 9, 'reward', '激励视频', NULL, NULL, 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 9 AND `value` = 'reward');
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 9, 'template_feeds', '模板渲染信息流', NULL, NULL, 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 9 AND `value` = 'template_feeds');

@@ -526,6 +526,13 @@ INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1257, 4, '8317', '屏东县', NULL, '8300', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1258, 4, '8318', '澎湖县', NULL, '8300', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1259, 4, '8319', '金门县', NULL, '8300', 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1260, 9, 'banner', '横幅', NULL, NULL, 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1261, 9, 'coopen', '开屏', NULL, NULL, 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1262, 9, 'custom_feeds', '自渲染信息流', NULL, NULL, 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1263, 9, 'init', '初始化类名', NULL, NULL, 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1264, 9, 'interstitial', '插屏', NULL, NULL, 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1265, 9, 'reward', '激励视频', NULL, NULL, 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (1266, 9, 'template_feeds', '模板渲染信息流', NULL, NULL, 1);
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -13,6 +13,7 @@ public interface SdkAdnMapper {
     // SDK渠道的广告网络信息，实际上本没有这个信息这里有点凑出来这个意思了
     int getSdkAdnCount(SdkAdnFilterParams filterParams);
     List<SdkAdn> getSdkAdnList(SdkAdnFilterParams filterParams);
+    List<Integer> getUsedCustomSdkAdnIdList();
     SdkAdn getOneSdkAdnReportApi(long sdkAdnId);
     Set<Integer> getSdkAdnReportApiIdList(long sdkAdnId);
 
