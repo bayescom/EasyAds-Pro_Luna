@@ -13,6 +13,6 @@ CREATE TABLE `sdk_group_percentage` (
   `weight` int(11) DEFAULT '1' COMMENT '权重值',
   `status` tinyint(4) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -35,6 +35,6 @@ CREATE TABLE `adspot_sdk_channel` (
   `cpm_update_time` int(11) DEFAULT NULL COMMENT '自动广告位的CPM更新有效最后时间',
   `supplier_adspot_config` text COMMENT '存放自动创建三方广告源信息的JSON字段信息',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;

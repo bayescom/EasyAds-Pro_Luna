@@ -15,6 +15,6 @@ CREATE TABLE `sdk_group_targeting` (
   `make_list` text NOT NULL COMMENT '定向手机品牌信息',
   `osv_list` text NOT NULL COMMENT '定向操作系统版本信息',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;
