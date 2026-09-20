@@ -15,7 +15,7 @@ CREATE TABLE `user` (
   `mark_delete` tinyint(1) NOT NULL DEFAULT '0' COMMENT '软删除',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `uniKey` (`user_name`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Records of user

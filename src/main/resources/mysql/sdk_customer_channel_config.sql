@@ -14,6 +14,6 @@ CREATE TABLE `sdk_customer_channel_config` (
    PRIMARY KEY (`id`),
    UNIQUE KEY `uni_key` (`sdk_customer_channel_id`,`os_type`) USING BTREE,
    KEY `idx_sdk_channel` (`sdk_customer_channel_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=191 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=191 DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;

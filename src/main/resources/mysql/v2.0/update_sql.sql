@@ -6,7 +6,7 @@ CREATE TABLE `easyads_version` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `version` varchar(16) NOT NULL COMMENT '软件版本标识符',
     PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO `easyads_version` (`version`) VALUES ('v2.0');
 
@@ -47,7 +47,7 @@ CREATE TABLE `sdk_targeting_percentage` (
     `percentage` float DEFAULT '100' COMMENT '流量比例',
     `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态',
     PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DROP TABLE IF EXISTS `sdk_experiment`;
 CREATE TABLE `sdk_experiment` (
@@ -60,7 +60,7 @@ CREATE TABLE `sdk_experiment` (
     `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态',
     PRIMARY KEY (`id`),
     KEY `searchIndex` (`adspot_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /*
     1.3 创建AB实验报表
@@ -85,7 +85,7 @@ CREATE TABLE `exp_report_hourly` (
   `income` float NOT NULL DEFAULT '0' COMMENT '收入',
   PRIMARY KEY (`id`) USING HASH,
   UNIQUE KEY `uniKey` (`timestamp`,`media_id`,`adspot_id`,`sdk_adspot_id`,`channel_id`,`exp_type`,`exp_id`,`group_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DROP TABLE IF EXISTS `exp_report_daily`;
 CREATE TABLE `exp_report_daily` (
@@ -106,7 +106,7 @@ CREATE TABLE `exp_report_daily` (
   `income` float NOT NULL DEFAULT '0' COMMENT '收入',
   PRIMARY KEY (`id`) USING HASH,
   UNIQUE KEY `uniKey` (`timestamp`,`media_id`,`adspot_id`,`sdk_adspot_id`,`channel_id`,`exp_type`,`exp_id`,`group_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 /*

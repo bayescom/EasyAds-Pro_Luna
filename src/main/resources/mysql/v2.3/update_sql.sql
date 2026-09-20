@@ -24,7 +24,7 @@ CREATE TABLE `sdk_customer_channel` (
     `meta_adspot_id_name` varchar(255) DEFAULT '广告位ID',
     `meta_adspot_id_required` tinyint(4) NOT NULL DEFAULT '1' COMMENT '字段是否必填 0 - 否， 1 - 是(默认)',
     PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=90001 DEFAULT CHARSET=utf8;
+    ) ENGINE=InnoDB AUTO_INCREMENT=90001 DEFAULT CHARSET=utf8mb4
 
 DROP TABLE IF EXISTS `sdk_customer_channel_config`;
 CREATE TABLE `sdk_customer_channel_config` (
@@ -36,7 +36,7 @@ CREATE TABLE `sdk_customer_channel_config` (
    PRIMARY KEY (`id`),
    UNIQUE KEY `uni_key` (`sdk_customer_channel_id`,`os_type`) USING BTREE,
    KEY `idx_sdk_channel` (`sdk_customer_channel_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=191 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=191 DEFAULT CHARSET=utf8mb4;
 
 /*
     3. 广告位SDK渠道增加自定义标识

@@ -18,6 +18,6 @@ CREATE TABLE `sdk_customer_channel` (
     `meta_adspot_id_name` varchar(255) DEFAULT '广告位ID',
     `meta_adspot_id_required` tinyint(4) NOT NULL DEFAULT '1' COMMENT '字段是否必填 0 - 否， 1 - 是(默认)',
     PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=90001 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=90001 DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;

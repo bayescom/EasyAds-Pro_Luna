@@ -14,7 +14,7 @@ CREATE TABLE `sdk_adn` (
   `mark_delete` smallint(1) NOT NULL DEFAULT '0' COMMENT '软删除',
   `support_auto_create` tinyint NOT NULL DEFAULT '0' COMMENT '是否支持自动创建广告位功能',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Records of sdk_adn

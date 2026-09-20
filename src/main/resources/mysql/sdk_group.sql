@@ -13,6 +13,6 @@ CREATE TABLE `sdk_group` (
   `sdk_group_targeting_percentage_id` int(11) NOT NULL COMMENT '策略下的流量比例分组id',
   `supplier_ids` varchar(300) NOT NULL DEFAULT '[]' COMMENT '分发的渠道id',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
 SET FOREIGN_KEY_CHECKS = 1;
