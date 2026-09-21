@@ -5,4 +5,4 @@ CREATE TABLE `easyads_version` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO `easyads_version` (`version`) VALUES ('v2.0');
+INSERT INTO `easyads_version` (`version`) VALUES ('v2.3');

@@ -1,7 +1,9 @@
 package com.easyads.component.mapper;
 
+import com.easyads.export.model.origin.SdkCustomAdnOrigin;
 import com.easyads.export.model.origin.SdkOriginInfo;
 import com.easyads.export.model.format.SdkAdspotProperty;
+import com.easyads.export.model.format.custom_adn.AppCustomAdn;
 import com.easyads.export.model.origin.SdkGroupStrategyOrigin;
 import org.apache.ibatis.annotations.MapKey;
 import org.springframework.stereotype.Component;
@@ -17,4 +19,8 @@ public interface EasyAdsMapper {
     List<SdkOriginInfo> getSdkSupplierConf();
 
     List<SdkGroupStrategyOrigin> getSdkGroupStrategyOrigin();
+
+    List<AppCustomAdn> getAppSdkCustomAdn();
+
+    List<SdkCustomAdnOrigin> getSdkCustomAdnOrigin();
 }

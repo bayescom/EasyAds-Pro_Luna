@@ -8,10 +8,14 @@ public class SdkOriginInfo {
     private String id;
     private String adn_id;
     private String name;
+    private int is_custom;
+    private String custom_param;
     private String supplier_params;
     private String bid_price;
     private float bid_ratio;
     private int is_head_bidding;
+    private int enable_cache;
+    private Integer cache_timeout;
     private int time_out;
     private int daily_req_limit;
     private int daily_imp_limit;

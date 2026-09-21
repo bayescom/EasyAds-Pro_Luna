@@ -33,11 +33,15 @@
         SELECT
             A.id,
             A.adn_id,
-            B.adn_name AS name,
+            COALESCE(B.adn_name, D.name) AS name,
+            COALESCE(A.is_custom, 0) AS is_custom,
+            COALESCE(A.custom_param, "") AS custom_param,
             COALESCE(A.supplier_params, "") AS supplier_params,
             COALESCE(A.bid_price, "0") AS bid_price,
             COALESCE(A.bid_ratio, 1.0) AS bid_ratio,
             COALESCE(A.is_head_bidding, 0) AS is_head_bidding,
+            COALESCE(A.enable_cache, 0) AS enable_cache,
+            A.cache_timeout,
             A.time_out,
             COALESCE(A.device_daily_req_limit, 0) AS device_daily_req_limit,
             COALESCE(A.device_daily_imp_limit, 0) AS device_daily_imp_limit,
@@ -47,9 +51,11 @@
             COALESCE(A.osv_list, "") AS osv_list,
             COALESCE(app_versions, "") AS app_versions
         FROM adspot_sdk_channel A
-        JOIN sdk_adn B ON A.adn_id = B.id
+        LEFT OUTER JOIN sdk_adn B ON A.adn_id = B.id AND COALESCE(A.is_custom, 0) = 0
+        LEFT OUTER JOIN sdk_customer_channel D ON A.adn_id = D.id AND COALESCE(A.is_custom, 0) = 1
         WHERE
             A.status = 1 AND A.mark_delete = 0
+            AND (B.id IS NOT NULL OR D.id IS NOT NULL)
     </select>
 
     <select id = "getSdkGroupStrategyOrigin" resultType = "com.easyads.export.model.origin.SdkGroupStrategyOrigin">
@@ -100,5 +106,31 @@
         ) D ON A.sdk_group_targeting_percentage_id = D.id
         WHERE
         B.status = 1 AND D.status = 1
+    </select>
+
+    <select id = "getAppSdkCustomAdn" resultType = "com.easyads.export.model.format.custom_adn.AppCustomAdn">
+        SELECT
+            B.media_id AS appId,
+            C.platform_type AS platform,
+            A.adn_id AS customAdnId
+        FROM adspot_sdk_channel A
+        JOIN adspot B ON A.adspot_id = B.id
+        JOIN media C ON B.media_id = C.id
+        WHERE COALESCE(A.is_custom, 0) = 1
+            AND A.status = 1 AND A.mark_delete = 0
+            AND B.status = 1 AND B.mark_delete = 0
+            AND C.status = 1 AND C.mark_delete = 0
+        GROUP BY 1,2,3
+    </select>
+
+    <select id = "getSdkCustomAdnOrigin" resultType = "com.easyads.export.model.origin.SdkCustomAdnOrigin">
+        SELECT
+            B.id,
+            B.name,
+            A.os_type,
+            A.config
+        FROM sdk_customer_channel_config A
+        JOIN sdk_customer_channel B ON A.sdk_customer_channel_id = B.id
+        WHERE A.status = 1
     </select>
 </mapper>
