@@ -14,6 +14,8 @@ public class Sdk {
     private String id;
     private String supplier_id;
     private String supplier_key;
+    private int is_custom;
+    private String custom_param;
     private String priority;
     private String index;
     private String name;
@@ -26,6 +28,8 @@ public class Sdk {
     private int is_head_bidding;
     private int sdk_price;
     private float bid_ratio;
+    private int enable_cache;
+    private Integer cache_timeout;
     private Map<String, InExCludeConf> system_direct;
     private SdkRequestLimit request_limit;
 
@@ -33,6 +37,8 @@ public class Sdk {
         this.sdk_id = sdkOriginInfo.getId(); // adspot_sdk在数据库里面的id
         this.id = sdkOriginInfo.getAdn_id(); // adn_id
         this.supplier_id = sdkOriginInfo.getAdn_id(); // adn_id
+        this.is_custom = sdkOriginInfo.getIs_custom();
+        this.custom_param = sdkOriginInfo.getCustom_param();
         this.priority = "0";
         this.index = "0";
         this.name = sdkOriginInfo.getName();
@@ -41,6 +47,8 @@ public class Sdk {
         this.is_head_bidding = sdkOriginInfo.getIs_head_bidding();
         this.sdk_price = Math.round(Float.valueOf(sdkOriginInfo.getBid_price()) * 100);
         this.bid_ratio = sdkOriginInfo.getBid_ratio();
+        this.enable_cache = sdkOriginInfo.getEnable_cache();
+        this.cache_timeout = sdkOriginInfo.getCache_timeout();
         this.system_direct = genSystemDirect(sdkOriginInfo);
         this.request_limit = new SdkRequestLimit(sdkOriginInfo);
     }

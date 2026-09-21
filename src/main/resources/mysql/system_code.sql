@@ -97,6 +97,8 @@ INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (824, 6, '16', 'iOS-16', NULL, 'iOS', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (825, 6, '17', 'iOS-17', NULL, 'iOS', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (826, 6, '18', 'iOS-18', NULL, 'iOS', 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (846, 6, '26', 'iOS-26', NULL, 'iOS', 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (847, 6, '27', 'iOS-27', NULL, 'iOS', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (827, 6, '4.0', 'Android-4.0', NULL, 'Android', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (828, 6, '4.1', 'Android-4.1', NULL, 'Android', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (829, 6, '4.2', 'Android-4.2', NULL, 'Android', 1);
@@ -116,6 +118,8 @@ INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (843, 6, '13', 'Android-13', NULL, 'Android', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (844, 6, '14', 'Android-14', NULL, 'Android', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (845, 6, '15', 'Android-15', NULL, 'Android', 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (848, 6, '16', 'Android-16', NULL, 'Android', 1);
+INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (849, 6, '17', 'Android-17', NULL, 'Android', 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (850, 4, '1100', '北京', NULL, NULL, 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (851, 4, '1200', '天津', NULL, NULL, 1);
 INSERT INTO `system_code` (`id`, `code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`) VALUES (852, 4, '1300', '河北', NULL, NULL, 1);

@@ -24,13 +24,13 @@ CREATE TABLE `sdk_customer_channel` (
     `meta_adspot_id_name` varchar(255) DEFAULT '广告位ID',
     `meta_adspot_id_required` tinyint(4) NOT NULL DEFAULT '1' COMMENT '字段是否必填 0 - 否， 1 - 是(默认)',
     PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB AUTO_INCREMENT=90001 DEFAULT CHARSET=utf8mb4
+) ENGINE=InnoDB AUTO_INCREMENT=90001 DEFAULT CHARSET=utf8mb4;
 
 DROP TABLE IF EXISTS `sdk_customer_channel_config`;
 CREATE TABLE `sdk_customer_channel_config` (
    `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增id',
    `sdk_customer_channel_id` int(11) NOT NULL COMMENT '自定义SDK广告网络的ID',
-   `os_type` tinyint(4) NOT NULL COMMENT '操作系统类型，0 - iOS, 1 - Android, 4 - 鸿蒙',
+   `os_type` tinyint(4) NOT NULL COMMENT '操作系统类型，0 - iOS, 1 - Android, 2 - 鸿蒙',
    `config` text COMMENT '配置信息',
    `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '配置状态信息',
    PRIMARY KEY (`id`),
@@ -80,3 +80,19 @@ WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 9 AND `valu
 INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
 SELECT 9, 'template_feeds', '模板渲染信息流', NULL, NULL, 1 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 9 AND `value` = 'template_feeds');
+
+/*
+    6. 操作系统版本更新到当前已发布版本
+*/
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 6, '26', 'iOS-26', NULL, 'iOS', 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 6 AND `value` = '26' AND `parent_value` = 'iOS');
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 6, '27', 'iOS-27', NULL, 'iOS', 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 6 AND `value` = '27' AND `parent_value` = 'iOS');
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 6, '16', 'Android-16', NULL, 'Android', 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 6 AND `value` = '16' AND `parent_value` = 'Android');
+INSERT INTO `system_code` (`code_type_id`, `value`, `name`, `extension`, `parent_value`, `status`)
+SELECT 6, '17', 'Android-17', NULL, 'Android', 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM `system_code` WHERE `code_type_id` = 6 AND `value` = '17' AND `parent_value` = 'Android');
