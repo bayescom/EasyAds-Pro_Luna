@@ -52,6 +52,12 @@ spring.redis.easyads.database = 1
 spring.redis.easyads.hostName = 127.0.0.1
 spring.redis.easyads.port = 6379
 spring.redis.easyads.password = yourpassword
+
+# custom adn redis
+spring.redis.customadn.database = 5
+spring.redis.customadn.hostName = 127.0.0.1
+spring.redis.customadn.port = 6379
+spring.redis.customadn.password = yourpassword
 ```
 ## 3. 编译部署
 ```bash

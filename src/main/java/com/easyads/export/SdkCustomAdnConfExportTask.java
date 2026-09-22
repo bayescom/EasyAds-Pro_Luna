@@ -35,8 +35,8 @@ public class SdkCustomAdnConfExportTask implements CommandLineRunner {
     private EasyAdsMapper easyAdsMapper;
 
     @Autowired
-    @Qualifier("easyadsConfRedisTemplate")
-    private StringRedisTemplate easyadsConfRedisTemplate;
+    @Qualifier("customAdnConfRedisTemplate")
+    private StringRedisTemplate customAdnConfRedisTemplate;
 
     @Override
     public void run(String... args) throws Exception {
@@ -65,8 +65,8 @@ public class SdkCustomAdnConfExportTask implements CommandLineRunner {
                 appSdkCustomAdnConfMd5Map.put(appId, valueMd5);
             }
 
-            RedisDataUtils.write2Redis(RedisConst.ONLINE + "-" + taskName, easyadsConfRedisTemplate,
-                    RedisConst.SDK_CUSTOM_ADN, appSdkCustomAdnConfMap, appSdkCustomAdnConfMd5Map);
+            RedisDataUtils.write2Redis(RedisConst.ONLINE + "-" + taskName, customAdnConfRedisTemplate,
+                    appSdkCustomAdnConfMap, appSdkCustomAdnConfMd5Map);
             LOGGER.info("Success to write Sdk Custom Adn Conf data to redis, app size = {}", appSdkCustomAdnConfMap.size());
         } catch (Exception e) {
             LOGGER.error("Failed to execute Sdk Custom Adn Conf Data Export", e);

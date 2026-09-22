@@ -75,6 +75,25 @@ public class RedisConfig {
         return new StringRedisTemplate(easyadsRedisConnectionFactory);
     }
 
+    // custom adn conf redis
+    @Bean
+    @ConfigurationProperties(prefix = "spring.redis.customadn")
+    public RedisStandaloneConfiguration customAdnRedisConf() {
+        return new RedisStandaloneConfiguration();
+    }
+
+    @Bean(name = "customAdnRedisConnectionFactory")
+    public LettuceConnectionFactory customAdnRedisConnectionFactory(GenericObjectPoolConfig poolConfig,
+                                                                    @Qualifier("customAdnRedisConf") RedisStandaloneConfiguration customAdnRedisConf) {
+        return redisConnectionFactory(poolConfig, customAdnRedisConf);
+    }
+
+    @Bean("customAdnConfRedisTemplate")
+    public StringRedisTemplate customAdnConfRedisTemplate(
+            @Qualifier("customAdnRedisConnectionFactory") RedisConnectionFactory customAdnRedisConnectionFactory) {
+        return new StringRedisTemplate(customAdnRedisConnectionFactory);
+    }
+
     // ----------------------------------------- 优雅退出关闭连接池 -----------------------------------------
     @PreDestroy
     public void gracefulShutdown() {
@@ -90,6 +109,12 @@ public class RedisConfig {
         if (easyadsConnectionFactory != null) {
             easyadsConnectionFactory.destroy();
             System.out.println("EasyAds Redis client has been shut down gracefully.");
+        }
+
+        LettuceConnectionFactory customAdnConnectionFactory = customAdnRedisConnectionFactory(redisPool(), customAdnRedisConf());
+        if (customAdnConnectionFactory != null) {
+            customAdnConnectionFactory.destroy();
+            System.out.println("Custom ADN Redis client has been shut down gracefully.");
         }
     }
 }

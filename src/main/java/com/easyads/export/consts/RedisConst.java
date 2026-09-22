@@ -8,6 +8,4 @@ public class RedisConst {
     public static final String UPD_KEY = "UPD";
 
     public static final String ONLINE = "[ONLINE]";
-
-    public static final String SDK_CUSTOM_ADN = "sdk_custom_adn";
 }
